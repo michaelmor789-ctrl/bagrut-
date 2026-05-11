@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html dir="rtl" lang="he">
 <head>
 <meta charset="UTF-8">
@@ -29,47 +28,44 @@
   input:focus, textarea:focus, button:focus { outline: none; }
   input, textarea { -webkit-appearance: none; appearance: none; }
   button { cursor: pointer; }
-
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(8px); }
-to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-.fade-up { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) backwards; }
-.fade-in { animation: fadeIn 0.3s ease backwards; }
-.pulse { animation: pulse 2s ease-in-out infinite; }
-
-.icon-btn {
-display: inline-flex; align-items: center; justify-content: center;
-border: none; background: transparent; border-radius: 50%;
-transition: transform 0.15s ease, background 0.15s ease;
-}
-.icon-btn:active { transform: scale(0.92); }
-
-.num-tabular { font-variant-numeric: tabular-nums; }
-
-.pressable { transition: transform 0.12s ease; }
-.pressable:active { transform: scale(0.96); }
-
-/* Hide scrollbars but allow scrolling */
-.scroll-area { scrollbar-width: thin; }
-
-@media (max-width: 380px) {
-.header-title { font-size: 20px !important; }
-}
+  
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  
+  .fade-up { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) backwards; }
+  .fade-in { animation: fadeIn 0.3s ease backwards; }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+  
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; border-radius: 50%;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .icon-btn:active { transform: scale(0.92); }
+  
+  .num-tabular { font-variant-numeric: tabular-nums; }
+  
+  .pressable { transition: transform 0.12s ease; }
+  .pressable:active { transform: scale(0.96); }
+  
+  /* Hide scrollbars but allow scrolling */
+  .scroll-area { scrollbar-width: thin; }
+  
+  @media (max-width: 380px) {
+    .header-title { font-size: 20px !important; }
+  }
 </style>
-
 </head>
 <body>
 <div id="root"></div>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel" data-presets="react">
@@ -94,6 +90,12 @@ const I = {
   Archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
   ListOrdered: '<line x1="10" x2="21" y1="6" y2="6"/><line x1="10" x2="21" y1="12" y2="12"/><line x1="10" x2="21" y1="18" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>',
   CalendarDays: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/>',
+  Upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+  FileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  Loader2: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+  AlertCircle: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  Key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+  ExternalLink: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
 };
 
 const Icon = ({ name, size = 16, strokeWidth = 2, style }) => (
@@ -198,14 +200,17 @@ function App() {
   const [exams, setExams] = useState(() => store.get('bagrut-exams', []));
   const [completed, setCompleted] = useState(() => store.get('bagrut-completed', []));
   const [darkMode, setDarkMode] = useState(() => store.get('bagrut-dark', false));
+  const [geminiKey, setGeminiKey] = useState(() => store.get('bagrut-gemini-key', ''));
   const [activeTab, setActiveTab] = useState('active');
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editingExam, setEditingExam] = useState(null);
   const [now, setNow] = useState(new Date());
   
   useEffect(() => store.set('bagrut-exams', exams), [exams]);
   useEffect(() => store.set('bagrut-completed', completed), [completed]);
   useEffect(() => store.set('bagrut-dark', darkMode), [darkMode]);
+  useEffect(() => store.set('bagrut-gemini-key', geminiKey), [geminiKey]);
   
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -248,6 +253,11 @@ function App() {
   };
   const handleDeleteCompleted = (id) => setCompleted(completed.filter(e => e.id !== id));
   
+  const handleBulkImport = (newExams) => {
+    setExams([...exams, ...newExams.map(e => ({...e, id: uid()}))]);
+    setShowImport(false);
+  };
+  
   // Apply theme to body
   useEffect(() => {
     document.body.style.background = t.bg;
@@ -289,6 +299,21 @@ function App() {
               aria-label="הוסף מבחן"
             >
               <Icon name="Plus" size={20} strokeWidth={2.6} />
+            </button>
+            <button
+              className="pressable"
+              onClick={() => setShowImport(true)}
+              style={{
+                height:44, padding:'0 12px', borderRadius:12,
+                background: t.card, color: t.text,
+                border:`1px solid ${t.border}`,
+                display:'inline-flex', alignItems:'center', gap:6,
+                fontSize:13, fontWeight:600,
+              }}
+              aria-label="ייבוא PDF"
+            >
+              <Icon name="Upload" size={15} strokeWidth={2.2} />
+              <span>ייבוא PDF</span>
             </button>
             <button
               className="icon-btn"
@@ -421,6 +446,15 @@ function App() {
           exam={editingExam} t={t} darkMode={darkMode}
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditingExam(null); }}
+        />
+      )}
+      
+      {showImport && (
+        <ImportModal
+          t={t} darkMode={darkMode}
+          geminiKey={geminiKey} setGeminiKey={setGeminiKey}
+          onImport={handleBulkImport}
+          onCancel={() => setShowImport(false)}
         />
       )}
     </div>
@@ -604,9 +638,19 @@ function ExamCard({ exam, timeLeft, isPast, isClosest, t, darkMode, onEdit, onDe
       ) : (
         <div style={{
           marginTop:10, paddingTop:10, borderTop:`1px solid ${cardBorder}`,
-          textAlign:'center', fontSize:13, color:dotColor, fontWeight:700,
+          textAlign:'center', fontSize:14, color:dotColor, fontWeight:700,
+          fontVariantNumeric:'tabular-nums',
+          letterSpacing:'-0.01em',
         }}>
-          {timeLeft.days > 0 ? `בעוד ${timeLeft.days} ימים` : `בעוד ${timeLeft.hours} שעות`}
+          {timeLeft.days > 0 ? (
+            <span>
+              {timeLeft.days} ימים, {String(timeLeft.hours).padStart(2,'0')}:{String(timeLeft.minutes).padStart(2,'0')}:{String(timeLeft.seconds).padStart(2,'0')}
+            </span>
+          ) : (
+            <span>
+              {String(timeLeft.hours).padStart(2,'0')}:{String(timeLeft.minutes).padStart(2,'0')}:{String(timeLeft.seconds).padStart(2,'0')}
+            </span>
+          )}
         </div>
       )}
       
@@ -1037,9 +1081,361 @@ function Field({ label, t, children }) {
   );
 }
 
+// --- IMPORT MODAL (PDF/Image upload via Gemini) ---
+function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel }) {
+  const [mode, setMode] = useState(geminiKey ? 'select' : 'setup');
+  const [keyInput, setKeyInput] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [extracted, setExtracted] = useState([]);
+  const [error, setError] = useState('');
+  
+  const inputStyle = {
+    width:'100%', padding:'12px 14px',
+    background:t.card, color:t.text,
+    border:`1px solid ${t.border}`, borderRadius:10,
+    fontSize:15, direction:'ltr',
+  };
+  
+  const saveKey = () => {
+    const k = keyInput.trim();
+    if (!k || k.length < 20) { setError('המפתח לא נראה תקין'); return; }
+    setGeminiKey(k);
+    setMode('select');
+    setError('');
+  };
+  
+  const processFile = async (file) => {
+    setMode('processing');
+    setError('');
+    setFileName(file.name);
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise((res, rej) => {
+        reader.onload = () => res(reader.result);
+        reader.onerror = () => rej(new Error('שגיאה בקריאת הקובץ'));
+        reader.readAsDataURL(file);
+      });
+      const base64 = dataUrl.split(',')[1];
+      const mimeType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      
+      const prompt = `חלץ את כל מבחני הבגרות מהמסמך. עבור כל מבחן צריך: subject (שם המקצוע בעברית, כולל מספר שאלון אם קיים, למשל "מתמטיקה 35471"), date (פורמט YYYY-MM-DD), time (פורמט HH:MM 24 שעות, אם אין שעה השתמש ב-09:00), note (מיקום או הערה אם קיים, או מחרוזת ריקה). החזר JSON array בלבד, ללא טקסט מקדים, ללא markdown, ללא backticks. דוגמה: [{"subject":"מתמטיקה 35471","date":"2026-05-12","time":"09:00","note":"מכללת העיר"}]`;
+      
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { inline_data: { mime_type: mimeType, data: base64 } },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        if (response.status === 400 || response.status === 401 || response.status === 403) {
+          setError('המפתח לא תקף. תוכל לעדכן אותו למטה.');
+          setMode('keyError');
+          return;
+        }
+        throw new Error(errData.error?.message || `שגיאה ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error('לא זוהו מבחנים במסמך');
+      }
+      
+      setExtracted(parsed.map((e, i) => ({
+        subject: e.subject || 'מקצוע',
+        date: e.date,
+        time: e.time || '09:00',
+        note: e.note || '',
+        datetime: new Date(`${e.date}T${e.time || '09:00'}:00`).toISOString(),
+        selected: true,
+        tempId: i,
+      })));
+      setMode('preview');
+    } catch (e) {
+      setError(e.message || 'שגיאה בעיבוד');
+      setMode('error');
+    }
+  };
+  
+  const toggle = (id) => setExtracted(extracted.map(e => e.tempId === id ? {...e, selected:!e.selected} : e));
+  
+  const handleConfirm = () => {
+    const selected = extracted.filter(e => e.selected);
+    if (selected.length === 0) return;
+    onImport(selected.map(({subject, datetime, note}) => ({subject, datetime, note})));
+  };
+  
+  const selectedCount = extracted.filter(e => e.selected).length;
+  
+  return (
+    <div className="fade-in" onClick={onCancel} style={{
+      position:'fixed', inset:0,
+      background: darkMode ? 'rgba(10,10,14,0.7)' : 'rgba(27,42,61,0.4)',
+      backdropFilter:'blur(8px)', zIndex:100,
+      display:'flex', alignItems:'flex-end', justifyContent:'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} dir="rtl" style={{
+        background:t.cardElevated, width:'100%', maxWidth:520,
+        borderRadius:'24px 24px 0 0', padding:'24px 24px 28px',
+        maxHeight:'92vh', overflowY:'auto',
+        animation:'fadeUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+        border:`1px solid ${t.border}`, borderBottom:'none',
+        paddingBottom:'calc(28px + env(safe-area-inset-bottom))',
+      }}>
+        <div style={{width:36, height:4, background:t.border, borderRadius:2, margin:'0 auto 20px'}}/>
+        
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18}}>
+          <h3 style={{margin:0, fontSize:20, fontWeight:800, letterSpacing:'-0.02em', color:t.text}}>
+            {mode === 'setup' ? 'הגדרה ראשונה' :
+             mode === 'select' ? 'ייבוא לוח בחינות' :
+             mode === 'processing' ? 'מנתח...' :
+             mode === 'preview' ? 'אישור מבחנים' :
+             mode === 'keyError' ? 'בעיה במפתח' : 'שגיאה'}
+          </h3>
+          <button onClick={onCancel} className="icon-btn" style={{
+            width:36, height:36, color:t.textMuted, background:t.card,
+          }} aria-label="סגור"><Icon name="X" size={18}/></button>
+        </div>
+        
+        {mode === 'setup' && (
+          <div style={{display:'flex', flexDirection:'column', gap:12}}>
+            <p style={{fontSize:14, color:t.text, margin:0, lineHeight:1.6}}>
+              כדי שהאפליקציה תוכל לקרוא PDF/תמונה ולחלץ את המבחנים, היא צריכה מפתח גישה ל-Google AI (Gemini).
+              <br/><br/>
+              <strong>הוא חינמי לחלוטין</strong> — לא צריך כרטיס אשראי.
+            </p>
+            
+            <div style={{
+              background:t.accentSoft, border:`1px solid ${t.borderSubtle}`,
+              borderRadius:12, padding:'14px 16px',
+            }}>
+              <div style={{fontSize:13, fontWeight:700, color:t.text, marginBottom:8}}>איך מקבלים מפתח (פעם אחת):</div>
+              <ol style={{margin:0, paddingInlineStart:20, fontSize:13, color:t.textMuted, lineHeight:1.7}}>
+                <li>לחץ על הקישור: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style={{color:t.accent, fontWeight:700, textDecoration:'none'}}>aistudio.google.com/apikey ↗</a></li>
+                <li>התחבר עם חשבון Google שלך</li>
+                <li>לחץ "Create API key"</li>
+                <li>העתק את המפתח (טקסט ארוך שמתחיל ב-AIza)</li>
+                <li>חזור הנה והדבק אותו למטה</li>
+              </ol>
+            </div>
+            
+            <Field label="מפתח Gemini API" t={t}>
+              <input
+                type="text" value={keyInput}
+                onChange={e => { setKeyInput(e.target.value); setError(''); }}
+                placeholder="AIza..."
+                style={inputStyle}
+                autoFocus
+              />
+            </Field>
+            
+            {error && (
+              <div style={{color:'#DD4848', fontSize:13, padding:'8px 12px', background:'#DD484815', borderRadius:8, fontWeight:500}}>{error}</div>
+            )}
+            
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:6}}>
+              <button onClick={onCancel} className="pressable" style={{
+                padding:14, background:t.card, color:t.text,
+                border:`1px solid ${t.border}`, borderRadius:12,
+                fontSize:15, fontWeight:600,
+              }}>ביטול</button>
+              <button onClick={saveKey} className="pressable" style={{
+                padding:14, background:t.accent, color:t.accentText,
+                border:'none', borderRadius:12,
+                fontSize:15, fontWeight:700,
+              }}>שמור</button>
+            </div>
+            
+            <p style={{fontSize:11, color:t.textSubtle, margin:'8px 0 0', textAlign:'center', lineHeight:1.5}}>
+              המפתח נשמר רק במכשיר שלך, לא נשלח לאף שרת חיצוני מלבד Google.
+            </p>
+          </div>
+        )}
+        
+        {mode === 'select' && (
+          <div style={{display:'flex', flexDirection:'column', gap:12}}>
+            <p style={{fontSize:14, color:t.textMuted, margin:'0 0 4px', lineHeight:1.5}}>
+              בחר תמונה או PDF של לוח הבחינות. ה-AI יחלץ את המבחנים אוטומטית.
+            </p>
+            
+            <label style={{
+              display:'flex', alignItems:'center', gap:14,
+              padding:'16px 18px', background:t.card,
+              border:`1px solid ${t.border}`, borderRadius:14,
+              cursor:'pointer',
+            }}>
+              <div style={{
+                width:44, height:44, borderRadius:12,
+                background:t.accentSoft, color:t.accent,
+                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+              }}>
+                <Icon name="Upload" size={20}/>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700, fontSize:15, marginBottom:2}}>בחר קובץ</div>
+                <div style={{fontSize:12, color:t.textMuted}}>תמונה (JPG/PNG) או PDF</div>
+              </div>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
+                style={{display:'none'}}
+              />
+            </label>
+            
+            <button onClick={() => { setKeyInput(geminiKey); setMode('setup'); }} style={{
+              background:'transparent', border:'none', color:t.textMuted,
+              fontSize:12, padding:'6px 0', cursor:'pointer',
+              display:'flex', alignItems:'center', gap:6, justifyContent:'center',
+              fontFamily:'inherit',
+            }}>
+              <Icon name="Key" size={12}/>
+              <span>החלפת מפתח API</span>
+            </button>
+          </div>
+        )}
+        
+        {mode === 'processing' && (
+          <div style={{
+            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+            padding:'40px 20px', gap:16,
+          }}>
+            <div style={{
+              width:56, height:56, borderRadius:16,
+              background:`${t.accent}15`, color:t.accent,
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+              <Icon name="Loader2" size={26} style={{animation:'spin 1s linear infinite'}}/>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:18, fontWeight:700, marginBottom:4, color:t.text}}>מזהה מבחנים...</div>
+              <div style={{fontSize:13, color:t.textMuted}}>{fileName ? `מנתח את ${fileName}` : 'עוד רגע...'}</div>
+            </div>
+          </div>
+        )}
+        
+        {mode === 'preview' && (
+          <div style={{display:'flex', flexDirection:'column', gap:10}}>
+            <p style={{fontSize:13, color:t.textMuted, margin:'0 0 4px'}}>
+              נמצאו {extracted.length} מבחנים. סמן את אלו שתרצה להוסיף:
+            </p>
+            <div style={{display:'flex', flexDirection:'column', gap:8, maxHeight:'50vh', overflowY:'auto'}}>
+              {extracted.map(exam => (
+                <button key={exam.tempId} onClick={() => toggle(exam.tempId)} style={{
+                  display:'flex', alignItems:'center', gap:12,
+                  padding:'12px 14px',
+                  background: exam.selected ? `${t.accent}10` : t.card,
+                  border:`1px solid ${exam.selected ? t.accent : t.border}`,
+                  borderRadius:12, cursor:'pointer',
+                  fontFamily:'inherit', color:t.text, textAlign:'right',
+                }}>
+                  <div style={{
+                    width:22, height:22, borderRadius:6,
+                    background: exam.selected ? t.accent : 'transparent',
+                    border:`2px solid ${exam.selected ? t.accent : t.border}`,
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                  }}>
+                    {exam.selected && <Icon name="Check" size={13} style={{color:t.accentText}} strokeWidth={3}/>}
+                  </div>
+                  <div style={{flex:1, minWidth:0}}>
+                    <div style={{fontWeight:700, fontSize:15, marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                      {exam.subject}
+                    </div>
+                    <div style={{fontSize:12, color:t.textMuted}}>
+                      {formatHebrewDate(exam.datetime)} · {formatTime(exam.datetime)}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:8}}>
+              <button onClick={() => setMode('select')} className="pressable" style={{
+                padding:14, background:t.card, color:t.text,
+                border:`1px solid ${t.border}`, borderRadius:12,
+                fontSize:15, fontWeight:600,
+              }}>ביטול</button>
+              <button onClick={handleConfirm} disabled={selectedCount === 0} className="pressable" style={{
+                padding:14,
+                background: selectedCount === 0 ? t.border : t.accent,
+                color: selectedCount === 0 ? t.textMuted : t.accentText,
+                border:'none', borderRadius:12,
+                fontSize:15, fontWeight:700,
+                cursor: selectedCount === 0 ? 'not-allowed' : 'pointer',
+              }}>הוסף ({selectedCount})</button>
+            </div>
+          </div>
+        )}
+        
+        {mode === 'keyError' && (
+          <div style={{display:'flex', flexDirection:'column', gap:12}}>
+            <div style={{
+              display:'flex', alignItems:'flex-start', gap:12,
+              padding:'14px 16px', background:'#DD484815',
+              border:'1px solid #DD484830', borderRadius:12,
+            }}>
+              <Icon name="AlertCircle" size={18} style={{color:'#DD4848', marginTop:2}}/>
+              <div style={{fontSize:14, color:t.text, lineHeight:1.5}}>{error}</div>
+            </div>
+            <Field label="מפתח Gemini API חדש" t={t}>
+              <input type="text" value={keyInput}
+                onChange={e => setKeyInput(e.target.value)}
+                placeholder="AIza..." style={inputStyle} autoFocus
+              />
+            </Field>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+              <button onClick={() => setMode('select')} className="pressable" style={{
+                padding:14, background:t.card, color:t.text,
+                border:`1px solid ${t.border}`, borderRadius:12,
+                fontSize:15, fontWeight:600,
+              }}>ביטול</button>
+              <button onClick={saveKey} className="pressable" style={{
+                padding:14, background:t.accent, color:t.accentText,
+                border:'none', borderRadius:12,
+                fontSize:15, fontWeight:700,
+              }}>שמור</button>
+            </div>
+          </div>
+        )}
+        
+        {mode === 'error' && (
+          <div style={{display:'flex', flexDirection:'column', gap:12}}>
+            <div style={{
+              display:'flex', alignItems:'flex-start', gap:12,
+              padding:'14px 16px', background:'#DD484815',
+              border:'1px solid #DD484830', borderRadius:12,
+            }}>
+              <Icon name="AlertCircle" size={18} style={{color:'#DD4848', marginTop:2}}/>
+              <div style={{fontSize:14, color:t.text, lineHeight:1.5}}>{error}</div>
+            </div>
+            <button onClick={() => { setMode('select'); setError(''); }} className="pressable" style={{
+              padding:14, background:t.accent, color:t.accentText,
+              border:'none', borderRadius:12,
+              fontSize:15, fontWeight:700,
+            }}>נסה שוב</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // --- RENDER ---
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
-
 </body>
 </html>
