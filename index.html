@@ -96,6 +96,10 @@ const I = {
   AlertCircle: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
   Key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
   ExternalLink: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  Share2: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+  CalendarPlus: '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M3 10h18"/><path d="M16 19h6"/><path d="M19 16v6"/>',
+  Timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  TrendingUp: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
 };
 
 const Icon = ({ name, size = 16, strokeWidth = 2, style }) => (
@@ -200,7 +204,6 @@ function App() {
   const [exams, setExams] = useState(() => store.get('bagrut-exams', []));
   const [completed, setCompleted] = useState(() => store.get('bagrut-completed', []));
   const [darkMode, setDarkMode] = useState(() => store.get('bagrut-dark', false));
-  const [geminiKey, setGeminiKey] = useState(() => store.get('bagrut-gemini-key', ''));
   const [activeTab, setActiveTab] = useState('active');
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -210,7 +213,6 @@ function App() {
   useEffect(() => store.set('bagrut-exams', exams), [exams]);
   useEffect(() => store.set('bagrut-completed', completed), [completed]);
   useEffect(() => store.set('bagrut-dark', darkMode), [darkMode]);
-  useEffect(() => store.set('bagrut-gemini-key', geminiKey), [geminiKey]);
   
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -452,7 +454,6 @@ function App() {
       {showImport && (
         <ImportModal
           t={t} darkMode={darkMode}
-          geminiKey={geminiKey} setGeminiKey={setGeminiKey}
           onImport={handleBulkImport}
           onCancel={() => setShowImport(false)}
         />
@@ -1081,93 +1082,139 @@ function Field({ label, t, children }) {
   );
 }
 
-// --- IMPORT MODAL (PDF/Image upload via Gemini) ---
-function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel }) {
-  const [mode, setMode] = useState(geminiKey ? 'select' : 'setup');
-  const [keyInput, setKeyInput] = useState('');
+// --- IMPORT MODAL (PDF parsing via pdf.js, no API needed) ---
+// Lazy-load pdf.js
+let pdfJsPromise = null;
+const loadPdfJs = () => {
+  if (pdfJsPromise) return pdfJsPromise;
+  pdfJsPromise = new Promise((resolve, reject) => {
+    if (window.pdfjsLib) return resolve(window.pdfjsLib);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js';
+    s.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = () => reject(new Error('שגיאה בטעינת ספריית PDF'));
+    document.head.appendChild(s);
+  });
+  return pdfJsPromise;
+};
+
+// Parse text extracted from Israeli Ministry of Education Bagrut PDF
+const parseBagrutText = (rawText) => {
+  // Normalize whitespace and joins lines
+  const text = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+  
+  // Find all date+time patterns: DD/MM/YYYY HH.MM or HH:MM
+  const datePattern = /(\d{2})\/(\d{2})\/(\d{4})\s+(\d{1,2})[.:](\d{2})/g;
+  const matches = [];
+  let m;
+  while ((m = datePattern.exec(text)) !== null) {
+    const dd = parseInt(m[1]), mm = parseInt(m[2]);
+    const hh = parseInt(m[4]), min = parseInt(m[5]);
+    if (dd < 1 || dd > 31 || mm < 1 || mm > 12) continue;
+    if (hh > 23 || min > 59) continue;
+    matches.push({
+      index: m.index,
+      length: m[0].length,
+      dd: m[1], mm: m[2], yyyy: m[3],
+      hh: m[4].padStart(2,'0'), min: m[5],
+    });
+  }
+  
+  if (matches.length === 0) return [];
+  
+  const exams = [];
+  for (let i = 0; i < matches.length; i++) {
+    const d = matches[i];
+    const startIdx = i === 0 ? 0 : matches[i-1].index + matches[i-1].length;
+    const chunk = text.substring(startIdx, d.index).trim();
+    
+    // Find the שאלון number (4-5 digits) followed by content
+    const shaalonMatch = chunk.match(/(\d{4,5})\s+(.+)/);
+    if (!shaalonMatch) continue;
+    
+    const shaalon = shaalonMatch[1];
+    const rest = shaalonMatch[2].replace(/\s+/g, ' ').trim();
+    
+    // Split subject from location using common location markers
+    const locMarkers = /(שלוחת|מכללת|מרכז\s|_?ברנר|אפעל|בית\s*ספר|אולפנת|ישיבת|ת"ת)/;
+    const locIdx = rest.search(locMarkers);
+    
+    let subject, note;
+    if (locIdx > 0) {
+      subject = rest.substring(0, locIdx).trim();
+      note = rest.substring(locIdx).trim();
+    } else {
+      const parts = rest.split(' ');
+      subject = parts.slice(0, Math.min(3, parts.length)).join(' ');
+      note = parts.slice(3).join(' ').trim();
+    }
+    
+    // Clean up subject and append שאלון number
+    subject = subject.replace(/\s*-\s*תכנית\s*חדשה\s*/, ' ').trim();
+    if (!subject) subject = 'מקצוע';
+    
+    const dtStr = `${d.yyyy}-${d.mm}-${d.dd}T${d.hh}:${d.min}:00`;
+    exams.push({
+      subject: `${subject} ${shaalon}`,
+      datetime: new Date(dtStr).toISOString(),
+      note,
+    });
+  }
+  
+  // Deduplicate by datetime + subject
+  const seen = new Set();
+  return exams.filter(e => {
+    const k = `${e.datetime}|${e.subject}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+};
+
+function ImportModal({ t, darkMode, onImport, onCancel }) {
+  const [mode, setMode] = useState('select');
   const [fileName, setFileName] = useState('');
   const [extracted, setExtracted] = useState([]);
   const [error, setError] = useState('');
-  
-  const inputStyle = {
-    width:'100%', padding:'12px 14px',
-    background:t.card, color:t.text,
-    border:`1px solid ${t.border}`, borderRadius:10,
-    fontSize:15, direction:'ltr',
-  };
-  
-  const saveKey = () => {
-    const k = keyInput.trim();
-    if (!k || k.length < 20) { setError('המפתח לא נראה תקין'); return; }
-    setGeminiKey(k);
-    setMode('select');
-    setError('');
-  };
   
   const processFile = async (file) => {
     setMode('processing');
     setError('');
     setFileName(file.name);
     try {
-      const reader = new FileReader();
-      const dataUrl = await new Promise((res, rej) => {
-        reader.onload = () => res(reader.result);
-        reader.onerror = () => rej(new Error('שגיאה בקריאת הקובץ'));
-        reader.readAsDataURL(file);
-      });
-      const base64 = dataUrl.split(',')[1];
-      const mimeType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      
-      const prompt = `חלץ את כל מבחני הבגרות מהמסמך. עבור כל מבחן צריך: subject (שם המקצוע בעברית, כולל מספר שאלון אם קיים, למשל "מתמטיקה 35471"), date (פורמט YYYY-MM-DD), time (פורמט HH:MM 24 שעות, אם אין שעה השתמש ב-09:00), note (מיקום או הערה אם קיים, או מחרוזת ריקה). החזר JSON array בלבד, ללא טקסט מקדים, ללא markdown, ללא backticks. דוגמה: [{"subject":"מתמטיקה 35471","date":"2026-05-12","time":"09:00","note":"מכללת העיר"}]`;
-      
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { inline_data: { mime_type: mimeType, data: base64 } },
-                { text: prompt }
-              ]
-            }],
-            generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
-          })
-        }
-      );
-      
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        if (response.status === 400 || response.status === 401 || response.status === 403) {
-          setError('המפתח לא תקף. תוכל לעדכן אותו למטה.');
-          setMode('keyError');
-          return;
-        }
-        throw new Error(errData.error?.message || `שגיאה ${response.status}`);
+      if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+        throw new Error('כרגע נתמכים רק קבצי PDF. בקרוב יתווסף תמיכה בתמונות.');
       }
       
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const cleaned = text.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(cleaned);
+      const pdfjs = await loadPdfJs();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({data: arrayBuffer}).promise;
       
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        throw new Error('לא זוהו מבחנים במסמך');
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(it => it.str).join(' ');
+        fullText += pageText + ' ';
+      }
+      
+      const parsed = parseBagrutText(fullText);
+      
+      if (parsed.length === 0) {
+        throw new Error('לא זוהו מבחנים במסמך. ייתכן שהפורמט של ה-PDF שונה מהצפוי, או שהקובץ מבוסס תמונה במקום טקסט.');
       }
       
       setExtracted(parsed.map((e, i) => ({
-        subject: e.subject || 'מקצוע',
-        date: e.date,
-        time: e.time || '09:00',
-        note: e.note || '',
-        datetime: new Date(`${e.date}T${e.time || '09:00'}:00`).toISOString(),
+        ...e,
         selected: true,
         tempId: i,
       })));
       setMode('preview');
     } catch (e) {
-      setError(e.message || 'שגיאה בעיבוד');
+      setError(e.message || 'שגיאה בעיבוד הקובץ');
       setMode('error');
     }
   };
@@ -1201,76 +1248,19 @@ function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel 
         
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18}}>
           <h3 style={{margin:0, fontSize:20, fontWeight:800, letterSpacing:'-0.02em', color:t.text}}>
-            {mode === 'setup' ? 'הגדרה ראשונה' :
-             mode === 'select' ? 'ייבוא לוח בחינות' :
+            {mode === 'select' ? 'ייבוא לוח בחינות' :
              mode === 'processing' ? 'מנתח...' :
-             mode === 'preview' ? 'אישור מבחנים' :
-             mode === 'keyError' ? 'בעיה במפתח' : 'שגיאה'}
+             mode === 'preview' ? 'אישור מבחנים' : 'שגיאה'}
           </h3>
           <button onClick={onCancel} className="icon-btn" style={{
             width:36, height:36, color:t.textMuted, background:t.card,
           }} aria-label="סגור"><Icon name="X" size={18}/></button>
         </div>
         
-        {mode === 'setup' && (
-          <div style={{display:'flex', flexDirection:'column', gap:12}}>
-            <p style={{fontSize:14, color:t.text, margin:0, lineHeight:1.6}}>
-              כדי שהאפליקציה תוכל לקרוא PDF/תמונה ולחלץ את המבחנים, היא צריכה מפתח גישה ל-Google AI (Gemini).
-              <br/><br/>
-              <strong>הוא חינמי לחלוטין</strong> — לא צריך כרטיס אשראי.
-            </p>
-            
-            <div style={{
-              background:t.accentSoft, border:`1px solid ${t.borderSubtle}`,
-              borderRadius:12, padding:'14px 16px',
-            }}>
-              <div style={{fontSize:13, fontWeight:700, color:t.text, marginBottom:8}}>איך מקבלים מפתח (פעם אחת):</div>
-              <ol style={{margin:0, paddingInlineStart:20, fontSize:13, color:t.textMuted, lineHeight:1.7}}>
-                <li>לחץ על הקישור: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style={{color:t.accent, fontWeight:700, textDecoration:'none'}}>aistudio.google.com/apikey ↗</a></li>
-                <li>התחבר עם חשבון Google שלך</li>
-                <li>לחץ "Create API key"</li>
-                <li>העתק את המפתח (טקסט ארוך שמתחיל ב-AIza)</li>
-                <li>חזור הנה והדבק אותו למטה</li>
-              </ol>
-            </div>
-            
-            <Field label="מפתח Gemini API" t={t}>
-              <input
-                type="text" value={keyInput}
-                onChange={e => { setKeyInput(e.target.value); setError(''); }}
-                placeholder="AIza..."
-                style={inputStyle}
-                autoFocus
-              />
-            </Field>
-            
-            {error && (
-              <div style={{color:'#DD4848', fontSize:13, padding:'8px 12px', background:'#DD484815', borderRadius:8, fontWeight:500}}>{error}</div>
-            )}
-            
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:6}}>
-              <button onClick={onCancel} className="pressable" style={{
-                padding:14, background:t.card, color:t.text,
-                border:`1px solid ${t.border}`, borderRadius:12,
-                fontSize:15, fontWeight:600,
-              }}>ביטול</button>
-              <button onClick={saveKey} className="pressable" style={{
-                padding:14, background:t.accent, color:t.accentText,
-                border:'none', borderRadius:12,
-                fontSize:15, fontWeight:700,
-              }}>שמור</button>
-            </div>
-            
-            <p style={{fontSize:11, color:t.textSubtle, margin:'8px 0 0', textAlign:'center', lineHeight:1.5}}>
-              המפתח נשמר רק במכשיר שלך, לא נשלח לאף שרת חיצוני מלבד Google.
-            </p>
-          </div>
-        )}
-        
         {mode === 'select' && (
           <div style={{display:'flex', flexDirection:'column', gap:12}}>
             <p style={{fontSize:14, color:t.textMuted, margin:'0 0 4px', lineHeight:1.5}}>
-              בחר תמונה או PDF של לוח הבחינות. ה-AI יחלץ את המבחנים אוטומטית.
+              העלה את ה-PDF של הודעת הרישום ממשרד החינוך. האפליקציה תזהה את כל המבחנים אוטומטית — בלי צורך ב-API או חשבון.
             </p>
             
             <label style={{
@@ -1287,26 +1277,23 @@ function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel 
                 <Icon name="Upload" size={20}/>
               </div>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700, fontSize:15, marginBottom:2}}>בחר קובץ</div>
-                <div style={{fontSize:12, color:t.textMuted}}>תמונה (JPG/PNG) או PDF</div>
+                <div style={{fontWeight:700, fontSize:15, marginBottom:2}}>בחר קובץ PDF</div>
+                <div style={{fontSize:12, color:t.textMuted}}>הודעת רישום ממשרד החינוך</div>
               </div>
               <input
                 type="file"
-                accept="image/*,application/pdf"
+                accept="application/pdf,.pdf"
                 onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
                 style={{display:'none'}}
               />
             </label>
             
-            <button onClick={() => { setKeyInput(geminiKey); setMode('setup'); }} style={{
-              background:'transparent', border:'none', color:t.textMuted,
-              fontSize:12, padding:'6px 0', cursor:'pointer',
-              display:'flex', alignItems:'center', gap:6, justifyContent:'center',
-              fontFamily:'inherit',
+            <div style={{
+              fontSize:12, color:t.textSubtle, textAlign:'center',
+              lineHeight:1.5, marginTop:4,
             }}>
-              <Icon name="Key" size={12}/>
-              <span>החלפת מפתח API</span>
-            </button>
+              העיבוד מתבצע במכשיר שלך בלבד — שום נתון לא נשלח לאינטרנט.
+            </div>
           </div>
         )}
         
@@ -1381,37 +1368,6 @@ function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel 
           </div>
         )}
         
-        {mode === 'keyError' && (
-          <div style={{display:'flex', flexDirection:'column', gap:12}}>
-            <div style={{
-              display:'flex', alignItems:'flex-start', gap:12,
-              padding:'14px 16px', background:'#DD484815',
-              border:'1px solid #DD484830', borderRadius:12,
-            }}>
-              <Icon name="AlertCircle" size={18} style={{color:'#DD4848', marginTop:2}}/>
-              <div style={{fontSize:14, color:t.text, lineHeight:1.5}}>{error}</div>
-            </div>
-            <Field label="מפתח Gemini API חדש" t={t}>
-              <input type="text" value={keyInput}
-                onChange={e => setKeyInput(e.target.value)}
-                placeholder="AIza..." style={inputStyle} autoFocus
-              />
-            </Field>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
-              <button onClick={() => setMode('select')} className="pressable" style={{
-                padding:14, background:t.card, color:t.text,
-                border:`1px solid ${t.border}`, borderRadius:12,
-                fontSize:15, fontWeight:600,
-              }}>ביטול</button>
-              <button onClick={saveKey} className="pressable" style={{
-                padding:14, background:t.accent, color:t.accentText,
-                border:'none', borderRadius:12,
-                fontSize:15, fontWeight:700,
-              }}>שמור</button>
-            </div>
-          </div>
-        )}
-        
         {mode === 'error' && (
           <div style={{display:'flex', flexDirection:'column', gap:12}}>
             <div style={{
@@ -1433,6 +1389,7 @@ function ImportModal({ t, darkMode, geminiKey, setGeminiKey, onImport, onCancel 
     </div>
   );
 }
+
 
 // --- RENDER ---
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
