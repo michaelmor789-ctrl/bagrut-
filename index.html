@@ -98,6 +98,8 @@ Target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle 
 RotateCw: '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
 Heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
 MapPin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+Bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+BellOff: '<path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>',
 };
 const Icon = ({ name, size = 16, strokeWidth = 2, style }) => (
 <svg
@@ -427,24 +429,13 @@ const end = new Date(start.getTime() + duration * 60000);
 const fmt = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
 const esc = (s) => String(s||'').replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
 const ics = [
-'BEGIN:VCALENDAR',
-'VERSION:2.0',
-'PRODID:-//Bagrut//IL',
-'CALSCALE:GREGORIAN',
-'BEGIN:VEVENT',
-`UID:${exam.id || Date.now()}@bagrut.local`,
-`DTSTAMP:${fmt(new Date())}`,
-`DTSTART:${fmt(start)}`,
-`DTEND:${fmt(end)}`,
-`SUMMARY:${esc(exam.subject)}`,
-exam.note ? `LOCATION:${esc(exam.note)}` : '',
-'BEGIN:VALARM',
-'ACTION:DISPLAY',
-'DESCRIPTION:תזכורת בגרות',
-'TRIGGER:-PT1H',
-'END:VALARM',
-'END:VEVENT',
-'END:VCALENDAR'
+'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Bagrut//IL','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+`UID:${exam.id || Date.now()}@bagrut.local`,`DTSTAMP:${fmt(new Date())}`,`DTSTART:${fmt(start)}`,`DTEND:${fmt(end)}`,
+`SUMMARY:${esc(exam.subject)}`,exam.note ? `LOCATION:${esc(exam.note)}` : '',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:מבחן מחר!','TRIGGER:-P1D','END:VALARM',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:מבחן בעוד שעה','TRIGGER:-PT1H','END:VALARM',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:15 דקות למבחן','TRIGGER:-PT15M','END:VALARM',
+'END:VEVENT','END:VCALENDAR'
 ].filter(Boolean).join('\r\n');
 const blob = new Blob([ics], {type: 'text/calendar;charset=utf-8'});
 const url = URL.createObjectURL(blob);
@@ -455,6 +446,33 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
+let notifTimers = [];
+const requestNotifPermission = async () => { if (!('Notification' in window)) return 'unsupported'; if (Notification.permission === 'granted') return 'granted'; if (Notification.permission === 'denied') return 'denied'; try { return await Notification.requestPermission(); } catch { return 'denied'; } };
+const showNotif = (title, body, tag) => { try { if (Notification.permission === 'granted') new Notification(title, {body, tag, requireInteraction: false}); } catch {} };
+const scheduleExamNotifications = (exams) => {
+notifTimers.forEach(clearTimeout);
+notifTimers = [];
+if (!('Notification' in window) || Notification.permission !== 'granted') return;
+const now = Date.now();
+exams.forEach(exam => {
+const examTime = new Date(exam.datetime).getTime();
+const emoji = getSubjectEmoji(exam.subject);
+const reminders = [
+{at: examTime - 86400000, title: `${emoji} מחר יש לך מבחן!`, body: `${exam.subject} בשעה ${formatTime(exam.datetime)}. לישון מוקדם 💤`},
+{at: examTime - 3600000, title: `⏰ מבחן בעוד שעה`, body: `${exam.subject} בשעה ${formatTime(exam.datetime)}`},
+{at: examTime - 900000, title: `🏃 15 דקות למבחן!`, body: `${exam.subject} — סע בזהירות 🚗`},
+{at: examTime, title: `${emoji} בהצלחה במבחן!`, body: `${exam.subject} — אתה מסוגל 💪`},
+];
+reminders.forEach((r, i) => {
+const delay = r.at - now;
+if (delay > 0 && delay < 2147483647) {
+const tid = setTimeout(() => showNotif(r.title, r.body, `${exam.id}-${i}`), delay);
+notifTimers.push(tid);
+}
+});
+});
 };
 const store = {
 get: (k, def) => {
@@ -490,6 +508,7 @@ const [showImport, setShowImport] = useState(false);
 const [editingExam, setEditingExam] = useState(null);
 const [practiceExam, setPracticeExam] = useState(null);
 const [showBreathing, setShowBreathing] = useState(false);
+const [notifStatus, setNotifStatus] = useState(() => 'Notification' in window ? Notification.permission : 'unsupported');
 const [now, setNow] = useState(new Date());
 useEffect(() => store.set('bagrut-exams', exams), [exams]);
 useEffect(() => store.set('bagrut-completed', completed), [completed]);
@@ -498,6 +517,8 @@ useEffect(() => {
 const t = setInterval(() => setNow(new Date()), 1000);
 return () => clearInterval(t);
 }, []);
+useEffect(() => { scheduleExamNotifications(exams); }, [exams, notifStatus]);
+const handleEnableNotifs = async () => { haptic(); const result = await requestNotifPermission(); setNotifStatus(result); if (result === 'granted') { showNotif('🎉 התראות הופעלו!', 'תקבל תזכורות לפני כל מבחן'); scheduleExamNotifications(exams); } else if (result === 'denied') { alert('ההתראות נחסמו. תוכל להפעיל אותן בהגדרות האתר בספארי.'); } };
 const sortedExams = useMemo(
 () => [...exams].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)),
 [exams]
@@ -588,6 +609,14 @@ aria-label="ייבוא PDF"
 >
 <Icon name="Upload" size={15} strokeWidth={2.2} />
 <span>ייבוא PDF</span>
+</button>
+<button
+className="icon-btn"
+onClick={handleEnableNotifs}
+style={{ width:36, height:36, color: notifStatus === 'granted' ? t.accent : t.textMuted }}
+aria-label="התראות"
+>
+<Icon name={notifStatus === 'granted' ? "Bell" : "BellOff"} size={18} />
 </button>
 <button
 className="icon-btn"
@@ -1646,29 +1675,48 @@ return pdfJsPromise;
 const parseBagrutText = (rawText) => {
 const text = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
 const pattern = /(\d{1,2})[.:](\d{2})\s+(\d{2})\/(\d{2})\/(\d{4})\s+(.+?)\s+(\d{4,5})(?=\s|$)/g;
+const subjectKW = /(?:מתמטיק|אנגלית|היסטוריה|תנ"?ך|ספרות|מחשבת|אזרחות|דינים|תפיל|תושבע|חינוך|משפח|ביולוגיה|כימיה|פיזיק|לשון|עברית|גיאוגרפיה)/;
+const locMarkers = /(שלוחת|מכללת|מרכז\s|_?ברנר|אפעל|בית\s*ספר|אולפנת|ישיבת)/;
+const extractFromChunk = (chunk) => {
+const kwMatch = chunk.match(subjectKW);
+if (kwMatch) {
+const start = kwMatch.index;
+const rest = chunk.substring(start);
+const locMatch = rest.match(locMarkers);
+let subj, n;
+if (locMatch) {
+subj = rest.substring(0, locMatch.index).trim();
+n = (chunk.substring(0, start).trim() + ' ' + rest.substring(locMatch.index)).trim();
+} else {
+const words = rest.split(/\s+/);
+const wc = Math.min(4, words.length);
+subj = words.slice(0, wc).join(' ').trim();
+n = (chunk.substring(0, start).trim() + ' ' + words.slice(wc).join(' ')).trim();
+}
+return {subject: subj, note: n, score: 10};
+}
+const locIdx = chunk.search(locMarkers);
+if (locIdx > 0) return {subject: chunk.substring(0, locIdx).trim(), note: chunk.substring(locIdx).trim(), score: 5};
+const parts = chunk.split(' ');
+return {subject: parts.slice(0, 3).join(' '), note: parts.slice(3).join(' '), score: 1};
+};
 const exams = [];
 let m;
 while ((m = pattern.exec(text)) !== null) {
 const hh = m[1], min = m[2], dd = m[3], mm = m[4], yyyy = m[5];
-let chunk = m[6].trim();
+const origChunk = m[6].trim();
 const shaalon = m[7];
 const dN = parseInt(dd), mN = parseInt(mm), hN = parseInt(hh), minN = parseInt(min);
 if (dN < 1 || dN > 31 || mN < 1 || mN > 12 || hN > 23 || minN > 59) continue;
-const forwardWords = /(שלוחת|מכללת|ברנר|אפעל|מחשבת|מתמטיקה|אנגלית|תנ"ך|ספרות|היסטוריה|אזרחות|דינים|תפילה|תושבע|חינוך|משפח|ישראל|תקווה)/;
-const reversedWords = /(תחולש|תללכמ|רנרב|לעפא|תבשחמ|הקיטמתמ|תילגנא|תורפס|הירוטסיה|תוחרזא|םינייד|הליפת|עבשות|ךוניח|לארשי|הווקת)/;
-if (!forwardWords.test(chunk) && reversedWords.test(chunk)) {
-chunk = chunk.split('').reverse().join('');
-chunk = chunk.replace(/\d{2,}/g, n => n.split('').reverse().join(''));
-}
-const locMarkers = /(שלוחת|מכללת|מרכז\s|_?ברנר|אפעל|בית\s*ספר|אולפנת|ישיבת)/;
-const locIdx = chunk.search(locMarkers);
-let subject, note;
-if (locIdx > 0) { subject = chunk.substring(0, locIdx).trim(); note = chunk.substring(locIdx).trim(); }
-else { const parts = chunk.split(' '); subject = parts.slice(0, Math.min(3, parts.length)).join(' '); note = parts.slice(3).join(' ').trim(); }
-subject = subject.replace(/\s*-\s*תכנית\s*חדשה\s*/, ' ').trim();
+let revChunk = origChunk.split('').reverse().join('');
+revChunk = revChunk.replace(/\d{2,}/g, n => n.split('').reverse().join(''));
+const fwd = extractFromChunk(origChunk);
+const rev = extractFromChunk(revChunk);
+const chosen = rev.score > fwd.score ? rev : fwd;
+let subject = chosen.subject.replace(/\s*-\s*תכנית\s*חדשה\s*/, ' ').trim();
 if (!subject) subject = 'מקצוע';
 const dtStr = `${yyyy}-${mm}-${dd}T${hh.padStart(2,'0')}:${min}:00`;
-exams.push({ subject: `${subject} ${shaalon}`, datetime: new Date(dtStr).toISOString(), note });
+exams.push({ subject: `${subject} ${shaalon}`, datetime: new Date(dtStr).toISOString(), note: chosen.note });
 }
 const seen = new Set();
 return exams.filter(e => { const k = `${e.datetime}|${e.subject}`; if (seen.has(k)) return false; seen.add(k); return true; });
