@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>ספירה לאחור לבגרויות</title>
+<meta name="theme-color" content="#4F90A8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1620" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="בגרויות">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href='data:application/json,{"name":"ספירה לאחור לבגרויות","short_name":"בגרויות","start_url":".","display":"standalone","background_color":"%23EEF4F9","theme_color":"%234F90A8","orientation":"portrait","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect width=%22192%22 height=%22192%22 rx=%2240%22 fill=%22%234F90A8%22/%3E%3Cg fill=%22none%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 transform=%22translate(48 56) scale(4)%22%3E%3Cpath d=%22M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z%22/%3E%3Cpath d=%22M22 10v6%22/%3E%3Cpath d=%22M6 12.5V16a6 3 0 0 0 12 0v-3.5%22/%3E%3C/g%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="%234F90A8"/><g fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(48 56) scale(4)"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></g></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', 'Heebo', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  input, textarea, button, select { font-family: inherit; font-size: 16px; }
+  input:focus, textarea:focus, button:focus { outline: none; }
+  input, textarea { -webkit-appearance: none; appearance: none; }
+  button { cursor: pointer; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes confetti { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+@keyframes breathe { 0%,100% { transform: scale(0.5); opacity:0.6; } 50% { transform: scale(1.15); opacity:1; } 75% { transform: scale(1.15); opacity:1; } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  .fade-up { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) backwards; }
+  .fade-in { animation: fadeIn 0.3s ease backwards; }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; border-radius: 50%;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .icon-btn:active { transform: scale(0.92); }
+  .num-tabular { font-variant-numeric: tabular-nums; }
+  .pressable { transition: transform 0.12s ease; }
+  .pressable:active { transform: scale(0.96); }
+  /* Hide scrollbars but allow scrolling */
+  .scroll-area { scrollbar-width: thin; }
+  @media (max-width: 380px) {
+    .header-title { font-size: 20px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const I = {
+Plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+X: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+Check: '<polyline points="20 6 9 17 4 12"/>',
+CheckCircle2: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+Edit2: '<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+Trash2: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+Moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+Sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+GraduationCap: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+Sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/>',
+Calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+Clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+ChevronLeft: '<path d="m15 18-6-6 6-6"/>',
+ChevronRight: '<path d="m9 18 6-6-6-6"/>',
+Archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+ListOrdered: '<line x1="10" x2="21" y1="6" y2="6"/><line x1="10" x2="21" y1="12" y2="12"/><line x1="10" x2="21" y1="18" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>',
+CalendarDays: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/>',
+Upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+FileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+Loader2: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+AlertCircle: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+Key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+ExternalLink: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+Share2: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+CalendarPlus: '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M3 10h18"/><path d="M16 19h6"/><path d="M19 16v6"/>',
+Timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+TrendingUp: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+BookOpen: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+Wind: '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+Target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+RotateCw: '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+Heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+MapPin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+Bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+BellOff: '<path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>',
+};
+const Icon = ({ name, size = 16, strokeWidth = 2, style }) => (
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width={size} height={size} viewBox="0 0 24 24"
+fill="none" stroke="currentColor"
+strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+style={{ flexShrink: 0, ...style }}
+dangerouslySetInnerHTML={{ __html: I[name] || '' }}
+/>
+);
+const QUOTES = [
+"כל מומחה היה פעם מתחיל.",
+"הצלחה היא הסכום של מאמצים קטנים שחוזרים על עצמם יום אחר יום.",
+"המחר שייך למי שמתכונן אליו היום.",
+"השקעה בידע משלמת את הריבית הטובה ביותר.",
+"אל תחכה. הזמן לעולם לא יהיה הזמן הנכון.",
+"עוד עמוד, עוד שאלה, עוד צעד קדימה.",
+"הצעד הראשון הוא תמיד הקשה ביותר.",
+"כל יום הוא הזדמנות להיות גרסה טובה יותר של עצמך.",
+"מי שזורע ידע - קוצר עתיד.",
+"המסע של אלף קילומטרים מתחיל בצעד אחד.",
+"אין קיצור דרך למקום ששווה להגיע אליו.",
+"הצלחה היא ללכת מכישלון לכישלון בלי לאבד התלהבות.",
+];
+const HEBREW_DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const HEBREW_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const QUESTIONS = {
+math: [
+{q:'מהי נוסחת השורש של משוואה ריבועית?', a:'x = (-b ± √(b²-4ac)) / 2a'},
+{q:'הנגזרת של x^n', a:'n·x^(n-1)'},
+{q:'אינטגרל של 1/x', a:'ln|x| + C'},
+{q:'משפט פיתגורס', a:'a² + b² = c² (במשולש ישר זווית)'},
+{q:'שטח עיגול', a:'π·r²'},
+{q:'היקף עיגול', a:'2π·r'},
+{q:'sin(30°)', a:'1/2'},
+{q:'cos(60°)', a:'1/2'},
+{q:'נוסחת מרחק בין שתי נקודות', a:'√((x₂-x₁)² + (y₂-y₁)²)'},
+{q:'נוסחת הסכום של סדרה חשבונית', a:'Sn = n·(a₁+aₙ)/2'},
+],
+english: [
+{q:'Past perfect (היה כבר עשה)', a:'had + V3 (had eaten)'},
+{q:'Present perfect (התחיל בעבר, נמשך)', a:'have/has + V3'},
+{q:'Conditional Type 2', a:'If + Past Simple, would + V1'},
+{q:'"Despite" vs "Although"', a:'Despite + noun, Although + clause'},
+{q:'Phrasal verb: "give up"', a:'לוותר'},
+{q:'Phrasal verb: "look up"', a:'לחפש במילון'},
+{q:'"Few" vs "Little"', a:'Few = ספיר (countable), Little = לא ספיר'},
+{q:'Idiom: "Hit the books"', a:'ללמוד קשה'},
+{q:'Reported speech: "I am tired"', a:'He said (that) he was tired'},
+{q:'Comparative + Superlative של "good"', a:'good - better - best'},
+],
+history: [
+{q:'הקונגרס הציוני הראשון', a:'1897, באזל, יזם הרצל'},
+{q:'הצהרת בלפור', a:'2 בנובמבר 1917'},
+{q:'הקמת מדינת ישראל', a:'14 במאי 1948 / ה׳ באייר תש"ח'},
+{q:'מלחמת ששת הימים', a:'יוני 1967'},
+{q:'מלחמת יום הכיפורים', a:'אוקטובר 1973'},
+{q:'החלטת האו"ם על חלוקת א"י', a:'29 בנובמבר 1947'},
+{q:'עליית הנאצים לשלטון', a:'30 בינואר 1933 בגרמניה'},
+{q:'מלחמת העולם השנייה', a:'1939-1945'},
+{q:'ראש ממשלה ראשון', a:'דוד בן-גוריון'},
+{q:'מבצע קדש', a:'1956, מלחמת סיני'},
+],
+bible: [
+{q:'אמהות', a:'שרה, רבקה, רחל, לאה'},
+{q:'אבות', a:'אברהם, יצחק, יעקב'},
+{q:'מספר ספרי התנ"ך', a:'24 ספרים: תורה, נביאים, כתובים'},
+{q:'חורבן בית ראשון', a:'586 לפנה"ס, ע"י נבוכדנצר'},
+{q:'חורבן בית שני', a:'70 לספירה, ע"י טיטוס'},
+{q:'מי כתב את ספר תהילים?', a:'דוד המלך (בעיקר)'},
+{q:'12 השבטים', a:'ראובן, שמעון, לוי, יהודה, יששכר, זבולון, דן, נפתלי, גד, אשר, יוסף, בנימין'},
+{q:'מקום עקדת יצחק', a:'הר המוריה'},
+{q:'מלך ישראל הראשון', a:'שאול בן קיש'},
+{q:'10 הדיברות מופיעות ב-', a:'שמות כ׳ ודברים ה׳'},
+],
+literature: [
+{q:'מטאפורה', a:'השוואה ישירה ללא מילת דמיון ("הוא אריה")'},
+{q:'דימוי', a:'השוואה עם "כמו" / "כ"'},
+{q:'אישוש (האנשה)', a:'מתן תכונות אנושיות לדומם'},
+{q:'אוקסימורון', a:'צירוף של ניגודים ("שתיקה רועמת")'},
+{q:'אנפורה', a:'חזרה על מילה בתחילת שורות'},
+{q:'הקבלה', a:'שתי שורות בעלות מבנה דומה'},
+{q:'סמל', a:'חפץ מוחשי המייצג רעיון מופשט'},
+{q:'אירוניה', a:'אמירה שמובנה הפוך לכוונה'},
+{q:'מצלול', a:'חזרה על צלילים דומים'},
+{q:'שיר חופשי', a:'שיר ללא חרוז ומשקל קבועים'},
+],
+philosophy: [
+{q:'הרמב"ם — שם מלא', a:'רבי משה בן מימון'},
+{q:'13 עקרי האמונה', a:'נכתבו ע"י הרמב"ם'},
+{q:'מורה נבוכים', a:'ספרו הפילוסופי של הרמב"ם'},
+{q:'ריה"ל', a:'רבי יהודה הלוי, מחבר ספר הכוזרי'},
+{q:'בעל שם טוב', a:'ר׳ ישראל בן אליעזר, מייסד החסידות'},
+{q:'אחד העם', a:'אשר גינצברג, אבי הציונות הרוחנית'},
+{q:'מרטין בובר', a:'פילוסוף הדיאלוג, "אני-אתה"'},
+{q:'הרמב"ן', a:'רבי משה בן נחמן'},
+{q:'אריסטו והרמב"ם', a:'הרמב"ם הושפע רבות מהפילוסופיה האריסטוטלית'},
+{q:'פילון האלכסנדרוני', a:'שילב יהדות עם הפילוסופיה ההלניסטית'},
+],
+civics: [
+{q:'שלוש רשויות השלטון', a:'מחוקקת (כנסת), מבצעת (ממשלה), שופטת (בתי המשפט)'},
+{q:'מספר חברי כנסת', a:'120'},
+{q:'אחוז החסימה', a:'3.25%'},
+{q:'הצהרת העצמאות', a:'14 במאי 1948'},
+{q:'חוקי יסוד מרכזיים', a:'כבוד האדם וחירותו, חופש העיסוק'},
+{q:'תפקיד הנשיא', a:'תפקיד ייצוגי-סמלי'},
+{q:'מי בוחר את ראש הממשלה?', a:'הכנסת (לאחר בחירות)'},
+{q:'חוק השבות', a:'1950 — כל יהודי זכאי לעלות לישראל'},
+{q:'בית המשפט העליון', a:'מורכב מ-15 שופטים'},
+{q:'משטר ישראל', a:'דמוקרטיה פרלמנטרית-יהודית'},
+],
+halacha: [
+{q:'שש מצוות תמידיות', a:'אמונה, ייחוד, אהבת השם, יראת השם, איסור עבודה זרה, איסור הרהורי עבירה'},
+{q:'ל"ט מלאכות', a:'המלאכות האסורות בשבת'},
+{q:'4 חלקי שולחן ערוך', a:'או"ח, יו"ד, אבן העזר, חושן משפט'},
+{q:'מחבר השולחן ערוך', a:'ר׳ יוסף קארו, ספרד / צפת'},
+{q:'הגהות הרמ"א', a:'ר׳ משה איסרליש, מנהג אשכנז'},
+{q:'ארבעת המינים', a:'לולב, אתרוג, הדס, ערבה'},
+{q:'שלוש סעודות שבת', a:'ליל שבת, שבת בבוקר, סעודה שלישית'},
+{q:'מנין לתפילה', a:'10 גברים מעל גיל בר מצווה'},
+{q:'דאורייתא vs דרבנן', a:'מהתורה / מחז"ל'},
+{q:'7 ברכות', a:'מתחת לחופה — לחתן וכלה'},
+],
+oraltorah: [
+{q:'6 סדרי המשנה', a:'זרעים, מועד, נשים, נזיקין, קודשים, טהרות'},
+{q:'עורך המשנה', a:'ר׳ יהודה הנשיא ("רבי")'},
+{q:'תנאים', a:'חכמי המשנה (עד 220 לספירה)'},
+{q:'אמוראים', a:'חכמי הגמרא (220-500)'},
+{q:'2 התלמודים', a:'בבלי וירושלמי'},
+{q:'מסכת ברכות', a:'הראשונה בסדר זרעים'},
+{q:'13 מידות', a:'שהתורה נדרשת בהן (ר׳ ישמעאל)'},
+{q:'הלל ושמאי', a:'שני בתי מדרש בתקופת התנאים'},
+{q:'תוספתא', a:'תוספת למשנה, מקבילה'},
+{q:'מדרשי הלכה', a:'מכילתא, ספרא, ספרי'},
+],
+prayer: [
+{q:'3 תפילות ביום', a:'שחרית, מנחה, ערבית'},
+{q:'תקנת התפילות', a:'אבותינו תיקנו / מקבילה לקרבנות'},
+{q:'שמונה עשרה ברכות', a:'תפילת העמידה (בחול)'},
+{q:'מודה אני', a:'מיד עם הקימה בבוקר'},
+{q:'ק"ש שחרית', a:'בזמן "הנץ" / עד סוף שעה שלישית'},
+{q:'תפילה במניין', a:'10 גברים, "ברוב עם הדרת מלך"'},
+{q:'כיוון התפילה', a:'אל ירושלים (בארץ — מערב/מזרח לפי המקום)'},
+{q:'13 מידות של רחמים', a:'נאמרות בעת הצורך, מקור: שמות ל"ד'},
+{q:'הזמן של תפילת מנחה', a:'מחצות היום עד השקיעה'},
+{q:'"תפילה היא עבודה שבלב"', a:'מהגמרא, תענית ב.'},
+],
+family: [
+{q:'מצוות כיבוד הורים', a:'אחת מעשרת הדיברות'},
+{q:'שלום בית', a:'ערך עליון ביהדות'},
+{q:'חינוך בערכים', a:'הוא תפקיד מרכזי של ההורים'},
+{q:'"חנוך לנער"', a:'משלי כ"ב, פסוק ו׳'},
+{q:'ערך הזמן המשפחתי', a:'חיוני להעברת המסורת'},
+{q:'גבולות בחינוך', a:'מאפשרים לילד לפתח אחריות וביטחון'},
+{q:'אוטונומיה', a:'מתן מרחב לבחירה עצמאית של הילד'},
+{q:'תפילה משותפת', a:'מחזקת את הזהות הרוחנית של המשפחה'},
+{q:'דיאלוג בית', a:'חשיבות השיחה הפתוחה בין הורים לילדים'},
+{q:'אתגרי הדור', a:'עידן המסכים, ערכי החברה המודרנית'},
+],
+};
+const getQuestionCategory = (subject) => {
+const s = subject || '';
+if (/מתמטיק/.test(s)) return 'math';
+if (/אנגלית|English/i.test(s)) return 'english';
+if (/היסטוריה/.test(s)) return 'history';
+if (/תנ"?ך|תנך/.test(s)) return 'bible';
+if (/ספרות/.test(s)) return 'literature';
+if (/מחשבת/.test(s)) return 'philosophy';
+if (/אזרחות/.test(s)) return 'civics';
+if (/דינים/.test(s)) return 'halacha';
+if (/תושבע|תושב"ע/.test(s)) return 'oraltorah';
+if (/תפיל/.test(s)) return 'prayer';
+if (/חינוך|משפח/.test(s)) return 'family';
+return null;
+};
+const getExamDayChecklist = (subject) => {
+const items = ['תעודת זהות', 'אישור הרשמה', '2 עטים שחורים', 'עיפרון ומחק', 'בקבוק מים'];
+const s = subject || '';
+if (/מתמטיק/.test(s)) items.push('מחשבון', 'סרגל', 'מחוגה');
+if (/אנגלית/.test(s)) items.push('מילון אנגלי-עברי');
+if (/תנ"?ך|תנך/.test(s)) items.push('תנ"ך (אם מותר)');
+if (/אזרחות|מחשבת/.test(s)) items.push('שעון אנלוגי');
+return items;
+};
+const CALM_TIPS = [
+"נשום עמוק. אתה הגעת לכאן.",
+"כל הידע כבר בתוכך — רק תן לו לצאת.",
+"מבחן זה לא סוף העולם. אתה מסוגל.",
+"קרא את השאלה לאט. תכננן לפני שאתה כותב.",
+"אם נתקע — דלג. תחזור אחר כך.",
+"אתה לא לבד. עוד עשרות אלפים עוברים את זה איתך.",
+"זכור: גם 70% זה ציון מצוין.",
+];
+const getCalmTip = () => CALM_TIPS[new Date().getDate() % CALM_TIPS.length];
+const getQuoteOfDay = () => {
+const start = new Date(new Date().getFullYear(), 0, 0);
+const dayOfYear = Math.floor((new Date() - start) / 86400000);
+return QUOTES[dayOfYear % QUOTES.length];
+};
+const calculateTimeLeft = (target) => {
+const diff = new Date(target) - new Date();
+if (diff <= 0) return { days:0, hours:0, minutes:0, seconds:0, expired:true };
+return {
+days: Math.floor(diff / 86400000),
+hours: Math.floor((diff / 3600000) % 24),
+minutes: Math.floor((diff / 60000) % 60),
+seconds: Math.floor((diff / 1000) % 60),
+expired: false,
+};
+};
+const formatHebrewDate = (s) => {
+const d = new Date(s);
+return `${d.getDate()} ב${HEBREW_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+};
+const formatTime = (s) => {
+const d = new Date(s);
+return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+const getStatusColor = (days, isPast) => {
+if (isPast) return '#94A3B8';
+if (days < 7) return '#DD4848';
+if (days < 14) return '#E89B47';
+if (days < 30) return '#D4B73E';
+return '#5BA76F';
+};
+const uid = () => Math.random().toString(36).slice(2, 11);
+const getSubjectEmoji = (subject) => {
+const s = subject || '';
+if (/מתמטיק/.test(s)) return '📐';
+if (/אנגלית|English/i.test(s)) return '🇬🇧';
+if (/היסטוריה/.test(s)) return '🏛️';
+if (/ספרות/.test(s)) return '📖';
+if (/תנ"?ך|תנך/.test(s)) return '📜';
+if (/מחשבת/.test(s)) return '💭';
+if (/אזרחות/.test(s)) return '🗳️';
+if (/דינים/.test(s)) return '⚖️';
+if (/תפיל/.test(s)) return '🙏';
+if (/תושבע|תושב"ע/.test(s)) return '✡️';
+if (/חינוך|משפח/.test(s)) return '👨‍👩‍👧';
+if (/ביולוגיה/.test(s)) return '🧬';
+if (/כימיה/.test(s)) return '🧪';
+if (/פיזיק/.test(s)) return '⚛️';
+if (/מחשב|תכנות|תוכנ/.test(s)) return '💻';
+if (/גיאוגרפיה|גאוגרפיה/.test(s)) return '🌍';
+if (/ערב/.test(s)) return '🌙';
+if (/צרפת/.test(s)) return '🇫🇷';
+if (/ספרד/.test(s)) return '🇪🇸';
+if (/אומנו|אמנות/.test(s)) return '🎨';
+if (/מוזיק|מוסיק/.test(s)) return '🎵';
+if (/כלכל|חשבונא/.test(s)) return '💰';
+if (/לשון|עברית/.test(s)) return '🔤';
+return '🎓';
+};
+const getDayOfWeek = (datetime) => HEBREW_DAYS[new Date(datetime).getDay()];
+const haptic = (heavy) => { try { if (navigator.vibrate) navigator.vibrate(heavy ? 30 : 10); } catch {} };
+const navigateToExam = (exam) => { if (!exam.note) { alert('אין כתובת למבחן זה'); return; } const q = encodeURIComponent(exam.note); window.open(`https://maps.google.com/?q=${q}`, '_blank'); };
+let confettiActive = false;
+const triggerConfetti = () => {
+if (confettiActive) return;
+confettiActive = true;
+const colors = ['#4F90A8','#E89B47','#5BA76F','#DD4848','#D4B73E','#A878D6'];
+const container = document.createElement('div');
+container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;';
+for (let i = 0; i < 80; i++) {
+const c = document.createElement('div');
+const x = Math.random() * 100;
+const delay = Math.random() * 0.4;
+const duration = 2 + Math.random() * 2;
+const rotate = Math.random() * 360;
+const isSquare = Math.random() > 0.5;
+c.style.cssText = `position:absolute;left:${x}%;top:-20px;width:${isSquare?10:6}px;height:${isSquare?10:14}px;background:${colors[i%colors.length]};animation:confetti ${duration}s ${delay}s cubic-bezier(0.1,0.4,0.3,1) forwards;transform:rotate(${rotate}deg);border-radius:${isSquare?2:0}px;`;
+container.appendChild(c);
+}
+document.body.appendChild(container);
+setTimeout(() => { container.remove(); confettiActive = false; }, 4500);
+};
+const getExamStatus = (exam, now) => {
+const start = new Date(exam.datetime);
+const duration = exam.duration || 120;
+const end = new Date(start.getTime() + duration * 60000);
+if (now < start) return 'upcoming';
+if (now <= end) return 'inProgress';
+return 'past';
+};
+const calculateTimeUntilEnd = (exam, now) => {
+const duration = exam.duration || 120;
+const end = new Date(new Date(exam.datetime).getTime() + duration * 60000);
+const diff = end - now;
+if (diff <= 0) return null;
+return {
+hours: Math.floor(diff / 3600000),
+minutes: Math.floor((diff / 60000) % 60),
+seconds: Math.floor((diff / 1000) % 60),
+};
+};
+const shareExam = async (exam) => {
+const text = `🎓 ${exam.subject}\n📅 ${formatHebrewDate(exam.datetime)} בשעה ${formatTime(exam.datetime)}${exam.note ? `\n📍 ${exam.note}` : ''}`;
+try {
+if (navigator.share) {
+await navigator.share({title: exam.subject, text});
+} else {
+await navigator.clipboard.writeText(text);
+alert('הפרטים הועתקו ללוח');
+}
+} catch (e) {}
+};
+const shareAll = async (exams) => {
+const sorted = [...exams].sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+const lines = sorted.map((e, i) =>
+`${i+1}. ${e.subject}\n   📅 ${formatHebrewDate(e.datetime)} · ${formatTime(e.datetime)}${e.note ? `\n   📍 ${e.note}` : ''}`
+);
+const text = `📚 לוח הבחינות שלי:\n\n${lines.join('\n\n')}`;
+try {
+if (navigator.share) {
+await navigator.share({title: 'לוח הבחינות שלי', text});
+} else {
+await navigator.clipboard.writeText(text);
+alert('הלוח הועתק ללוח');
+}
+} catch (e) {}
+};
+const downloadIcs = (exam) => {
+const start = new Date(exam.datetime);
+const duration = exam.duration || 120;
+const end = new Date(start.getTime() + duration * 60000);
+const fmt = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
+const esc = (s) => String(s||'').replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
+const ics = [
+'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Bagrut//IL','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+`UID:${exam.id || Date.now()}@bagrut.local`,`DTSTAMP:${fmt(new Date())}`,`DTSTART:${fmt(start)}`,`DTEND:${fmt(end)}`,
+`SUMMARY:${esc(exam.subject)}`,exam.note ? `LOCATION:${esc(exam.note)}` : '',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:מבחן מחר!','TRIGGER:-P1D','END:VALARM',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:מבחן בעוד שעה','TRIGGER:-PT1H','END:VALARM',
+'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:15 דקות למבחן','TRIGGER:-PT15M','END:VALARM',
+'END:VEVENT','END:VCALENDAR'
+].filter(Boolean).join('\r\n');
+const blob = new Blob([ics], {type: 'text/calendar;charset=utf-8'});
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `${exam.subject.replace(/[^\u0590-\u05FFa-zA-Z0-9]+/g, '_')}.ics`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
+let notifTimers = [];
+const requestNotifPermission = async () => { if (!('Notification' in window)) return 'unsupported'; if (Notification.permission === 'granted') return 'granted'; if (Notification.permission === 'denied') return 'denied'; try { return await Notification.requestPermission(); } catch { return 'denied'; } };
+const showNotif = (title, body, tag) => { try { if (Notification.permission === 'granted') new Notification(title, {body, tag, requireInteraction: false}); } catch {} };
+const scheduleExamNotifications = (exams) => {
+notifTimers.forEach(clearTimeout);
+notifTimers = [];
+if (!('Notification' in window) || Notification.permission !== 'granted') return;
+const now = Date.now();
+exams.forEach(exam => {
+const examTime = new Date(exam.datetime).getTime();
+const emoji = getSubjectEmoji(exam.subject);
+const reminders = [
+{at: examTime - 86400000, title: `${emoji} מחר יש לך מבחן!`, body: `${exam.subject} בשעה ${formatTime(exam.datetime)}. לישון מוקדם 💤`},
+{at: examTime - 3600000, title: `⏰ מבחן בעוד שעה`, body: `${exam.subject} בשעה ${formatTime(exam.datetime)}`},
+{at: examTime - 900000, title: `🏃 15 דקות למבחן!`, body: `${exam.subject} — סע בזהירות 🚗`},
+{at: examTime, title: `${emoji} בהצלחה במבחן!`, body: `${exam.subject} — אתה מסוגל 💪`},
+];
+reminders.forEach((r, i) => {
+const delay = r.at - now;
+if (delay > 0 && delay < 2147483647) {
+const tid = setTimeout(() => showNotif(r.title, r.body, `${exam.id}-${i}`), delay);
+notifTimers.push(tid);
+}
+});
+});
+};
+const store = {
+get: (k, def) => {
+try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }
+catch { return def; }
+},
+set: (k, v) => {
+try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+},
+};
+const getTheme = (darkMode) => darkMode ? {
+bg:'#0E1620', card:'#1A2330', cardElevated:'#212C3C',
+cardCream:'#2A2418', cardCreamBorder:'#3D3525',
+text:'#E8EFF5', textMuted:'#8A9AAD', textSubtle:'#5D6B7E',
+border:'#2A3543', borderSubtle:'#202A38',
+accent:'#5FA9C2', accentSoft:'#1A2D38', accentText:'#0E1620',
+tabBg:'#1A2330',
+} : {
+bg:'#EEF4F9', card:'#FFFFFF', cardElevated:'#FFFFFF',
+cardCream:'#FEF8E8', cardCreamBorder:'#F4E8C8',
+text:'#1B2A3D', textMuted:'#6B7B8E', textSubtle:'#94A3B8',
+border:'#DCE5EC', borderSubtle:'#E8EEF3',
+accent:'#4F90A8', accentSoft:'#E6F0F4', accentText:'#FFFFFF',
+tabBg:'#E5EBF1',
+};
+function App() {
+const [exams, setExams] = useState(() => store.get('bagrut-exams', []));
+const [completed, setCompleted] = useState(() => store.get('bagrut-completed', []));
+const [darkMode, setDarkMode] = useState(() => store.get('bagrut-dark', false));
+const [activeTab, setActiveTab] = useState('active');
+const [showForm, setShowForm] = useState(false);
+const [showImport, setShowImport] = useState(false);
+const [editingExam, setEditingExam] = useState(null);
+const [practiceExam, setPracticeExam] = useState(null);
+const [showBreathing, setShowBreathing] = useState(false);
+const [notifStatus, setNotifStatus] = useState(() => 'Notification' in window ? Notification.permission : 'unsupported');
+const [now, setNow] = useState(new Date());
+useEffect(() => store.set('bagrut-exams', exams), [exams]);
+useEffect(() => store.set('bagrut-completed', completed), [completed]);
+useEffect(() => store.set('bagrut-dark', darkMode), [darkMode]);
+useEffect(() => {
+const t = setInterval(() => setNow(new Date()), 1000);
+return () => clearInterval(t);
+}, []);
+useEffect(() => { scheduleExamNotifications(exams); }, [exams, notifStatus]);
+const handleEnableNotifs = async () => { haptic(); const result = await requestNotifPermission(); setNotifStatus(result); if (result === 'granted') { showNotif('🎉 התראות הופעלו!', 'תקבל תזכורות לפני כל מבחן'); scheduleExamNotifications(exams); } else if (result === 'denied') { alert('ההתראות נחסמו. תוכל להפעיל אותן בהגדרות האתר בספארי.'); } };
+const sortedExams = useMemo(
+() => [...exams].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)),
+[exams]
+);
+const upcomingExams = useMemo(
+() => sortedExams.filter(e => new Date(e.datetime) > now),
+[sortedExams, now]
+);
+const closestExam = upcomingExams[0];
+const lastUpcoming = upcomingExams[upcomingExams.length - 1];
+const totalTimeLeft = lastUpcoming ? calculateTimeLeft(lastUpcoming.datetime) : null;
+const t = getTheme(darkMode);
+const handleSave = (data) => {
+if (editingExam) {
+setExams(exams.map(e => e.id === editingExam.id ? {...data, id: editingExam.id} : e));
+} else {
+setExams([...exams, {...data, id: uid()}]);
+}
+setShowForm(false); setEditingExam(null);
+};
+const handleEdit = (exam) => { setEditingExam(exam); setShowForm(true); };
+const handleDelete = (id) => setExams(exams.filter(e => e.id !== id));
+const handleComplete = (exam) => {
+setExams(exams.filter(e => e.id !== exam.id));
+setCompleted([{...exam, completedAt: new Date().toISOString()}, ...completed]);
+triggerConfetti();
+};
+const handleRestore = (exam) => {
+setCompleted(completed.filter(e => e.id !== exam.id));
+const { completedAt, ...rest } = exam;
+setExams([...exams, rest]);
+};
+const handleDeleteCompleted = (id) => setCompleted(completed.filter(e => e.id !== id));
+const handleBulkImport = (newExams) => {
+setExams([...exams, ...newExams.map(e => ({...e, id: uid()}))]);
+setShowImport(false);
+};
+useEffect(() => {
+document.body.style.background = t.bg;
+document.body.style.color = t.text;
+const meta = document.querySelector('meta[name="theme-color"]:not([media])');
+if (!meta) {
+const m = document.createElement('meta');
+m.name = 'theme-color';
+m.content = t.bg;
+document.head.appendChild(m);
+}
+}, [darkMode]);
+return (
+<div dir="rtl" style={{
+minHeight: '100vh', background: t.bg, color: t.text,
+paddingTop: 'env(safe-area-inset-top)',
+paddingBottom: 'env(safe-area-inset-bottom)',
+transition: 'background 0.3s ease',
+}}>
+<div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 100px' }}>
+{}
+<header className="fade-in" style={{
+display:'flex', justifyContent:'space-between', alignItems:'flex-start',
+marginBottom: 16, gap: 12,
+}}>
+{}
+<div style={{display:'flex', gap:8, alignItems:'center', flexShrink:0}}>
+<button
+className="pressable"
+onClick={() => { setEditingExam(null); setShowForm(true); }}
+style={{
+width:44, height:44, borderRadius:12, border:'none',
+background: t.accent, color: t.accentText,
+display:'inline-flex', alignItems:'center', justifyContent:'center',
+boxShadow: darkMode ? '0 4px 14px rgba(95,169,194,0.25)' : '0 4px 14px rgba(79,144,168,0.3)',
+}}
+aria-label="הוסף מבחן"
+>
+<Icon name="Plus" size={20} strokeWidth={2.6} />
+</button>
+<button
+className="pressable"
+onClick={() => setShowImport(true)}
+style={{
+height:44, padding:'0 12px', borderRadius:12,
+background: t.card, color: t.text,
+border:`1px solid ${t.border}`,
+display:'inline-flex', alignItems:'center', gap:6,
+fontSize:13, fontWeight:600,
+}}
+aria-label="ייבוא PDF"
+>
+<Icon name="Upload" size={15} strokeWidth={2.2} />
+<span>ייבוא PDF</span>
+</button>
+<button
+className="icon-btn"
+onClick={handleEnableNotifs}
+style={{ width:36, height:36, color: notifStatus === 'granted' ? t.accent : t.textMuted }}
+aria-label="התראות"
+>
+<Icon name={notifStatus === 'granted' ? "Bell" : "BellOff"} size={18} />
+</button>
+<button
+className="icon-btn"
+onClick={() => setDarkMode(!darkMode)}
+style={{ width:36, height:36, color: t.textMuted }}
+aria-label="מצב כהה"
+>
+<Icon name={darkMode ? "Sun" : "Moon"} size={18} />
+</button>
+</div>
+{}
+<div style={{
+display:'flex', alignItems:'flex-start', gap:10,
+minWidth:0, flexDirection:'row-reverse',
+}}>
+<div style={{
+width:40, height:40, borderRadius:12,
+background: t.accentSoft, color: t.accent,
+display:'flex', alignItems:'center', justifyContent:'center',
+flexShrink:0, marginTop:2,
+}}>
+<Icon name="GraduationCap" size={20} />
+</div>
+<div style={{ textAlign:'right', minWidth:0 }}>
+<h1 className="header-title" style={{
+margin:0, fontSize:22, fontWeight:800,
+letterSpacing:'-0.02em', lineHeight:1.15, color:t.text,
+}}>
+ספירה לאחור<br/>לבגרויות
+</h1>
+<div style={{
+fontSize:12, color:t.textMuted, marginTop:4, lineHeight:1.3,
+}}>
+המסע שלך לתעודה<br/>מתחיל כאן
+</div>
+</div>
+</div>
+</header>
+{}
+<div style={{ height:1, background:t.border, margin:'0 -4px 16px' }} />
+{}
+<div className="fade-up" style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:16, padding:'14px 16px', marginBottom:14,
+display:'flex', alignItems:'flex-start', gap:12,
+animationDelay:'0.04s',
+}}>
+<div style={{
+width:36, height:36, borderRadius:10,
+background:t.accentSoft, color:t.accent,
+display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+}}>
+<Icon name="Sparkles" size={18} />
+</div>
+<div style={{ flex:1, textAlign:'right' }}>
+<div style={{ fontSize:15, color:t.text, lineHeight:1.5, fontWeight:500 }}>
+{getQuoteOfDay()}
+</div>
+<div style={{ fontSize:12, color:t.textSubtle, marginTop:4, fontWeight:500 }}>
+ציטוט היום
+</div>
+</div>
+</div>
+{}
+<div className="fade-up" style={{
+display:'flex', gap:2, padding:4,
+background:t.tabBg, borderRadius:999,
+marginBottom:16, animationDelay:'0.07s',
+}}>
+{[
+{id:'archive', label:'ארכיון', count:completed.length, icon:'Archive'},
+{id:'calendar', label:'לוח שנה', count:null, icon:'CalendarDays'},
+{id:'active', label:'פעילים', count:exams.length, icon:'ListOrdered'},
+].map(tab => {
+const isActive = activeTab === tab.id;
+return (
+<button
+key={tab.id}
+onClick={() => setActiveTab(tab.id)}
+style={{
+flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+gap:6, padding:'9px 6px', border:'none', borderRadius:999,
+background: isActive ? t.card : 'transparent',
+color: isActive ? t.text : t.textMuted,
+fontSize:13, fontWeight: isActive ? 700 : 500,
+boxShadow: isActive ? (darkMode ? '0 1px 3px rgba(0,0,0,0.4)' : '0 1px 3px rgba(27,42,61,0.08)') : 'none',
+transition:'all 0.2s ease',
+}}
+>
+<Icon name={tab.icon} size={14} strokeWidth={isActive ? 2.5 : 2} />
+<span>
+{tab.label}{tab.count !== null && ` (${tab.count})`}
+</span>
+</button>
+);
+})}
+</div>
+{}
+{activeTab === 'active' && (
+<ActiveTab
+t={t} darkMode={darkMode}
+sortedExams={sortedExams} upcomingExams={upcomingExams}
+closestExam={closestExam} totalTimeLeft={totalTimeLeft}
+now={now} exams={exams} completedCount={completed.length}
+onAdd={() => { setEditingExam(null); setShowForm(true); }}
+onEdit={handleEdit} onDelete={handleDelete} onComplete={handleComplete}
+onShareAll={() => shareAll([...exams, ...completed])}
+onPractice={(exam) => setPracticeExam(exam)}
+onBreathing={() => setShowBreathing(true)}
+/>
+)}
+{activeTab === 'calendar' && (
+<CalendarView
+t={t} darkMode={darkMode}
+exams={[...upcomingExams, ...sortedExams.filter(e => new Date(e.datetime) <= now), ...completed.map(c => ({...c, completed:true}))]}
+/>
+)}
+{activeTab === 'archive' && (
+<ArchiveTab
+t={t} darkMode={darkMode} completed={completed}
+onRestore={handleRestore} onDelete={handleDeleteCompleted}
+/>
+)}
+</div>
+{showForm && (
+<ExamForm
+exam={editingExam} t={t} darkMode={darkMode}
+onSave={handleSave}
+onCancel={() => { setShowForm(false); setEditingExam(null); }}
+/>
+)}
+{showImport && (
+<ImportModal
+t={t} darkMode={darkMode}
+onImport={handleBulkImport}
+onCancel={() => setShowImport(false)}
+/>
+)}
+{practiceExam && (
+<PracticeModal exam={practiceExam} t={t} darkMode={darkMode} onClose={() => setPracticeExam(null)} />
+)}
+{showBreathing && (
+<BreathingModal t={t} darkMode={darkMode} onClose={() => setShowBreathing(false)} />
+)}
+</div>
+);
+}
+function ActiveTab({ t, darkMode, sortedExams, upcomingExams, closestExam, totalTimeLeft, now, exams, completedCount, onAdd, onEdit, onDelete, onComplete, onShareAll, onPractice, onBreathing }) {
+const todayExam = upcomingExams.find(e => isExamToday(e, now));
+return (
+<>
+{todayExam && (<ExamDayCard exam={todayExam} t={t} darkMode={darkMode} now={now} onOpenBreathing={onBreathing} onComplete={onComplete} />)}
+{sortedExams.length > 0 && totalTimeLeft && !totalTimeLeft.expired && (
+<div className="fade-up num-tabular" style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:18, padding:'18px 14px 14px',
+marginBottom:14, animationDelay:'0.08s',
+}}>
+<div style={{
+fontSize:14, color:t.text, fontWeight:600,
+marginBottom:14, textAlign:'center',
+}}>
+הזמן עד סיום כל הבגרויות
+</div>
+<div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:7 }}>
+{[
+{val:totalTimeLeft.days, label:'ימים'},
+{val:totalTimeLeft.hours, label:'שעות'},
+{val:totalTimeLeft.minutes, label:'דקות'},
+{val:totalTimeLeft.seconds, label:'שניות'},
+].map((u, i) => (
+<div key={i} style={{
+background:t.accentSoft, border:`1px solid ${t.borderSubtle}`,
+borderRadius:14, padding:'14px 4px 10px', textAlign:'center',
+minHeight:80, display:'flex', flexDirection:'column', justifyContent:'space-between',
+}}>
+<div style={{
+fontSize:24, fontWeight:800, color:t.text,
+lineHeight:1, letterSpacing:'-0.02em',
+}}>
+{String(u.val).padStart(2,'0')}
+</div>
+<div style={{ fontSize:11, color:t.textMuted, fontWeight:500 }}>
+{u.label}
+</div>
+</div>
+))}
+</div>
+</div>
+)}
+{}
+{(exams.length > 0 || completedCount > 0) && (<>
+{(completedCount > 0 || exams.length > 0) && (
+<div className="fade-up" style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:14, padding:'14px 16px', marginBottom:8,
+animationDelay:'0.085s',
+}}>
+<div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, fontSize:12, color:t.textMuted, fontWeight:600}}>
+<span>התקדמות</span>
+<span style={{color:t.accent, fontWeight:700, fontVariantNumeric:'tabular-nums'}}>
+{completedCount + exams.length > 0 ? Math.round(completedCount / (completedCount + exams.length) * 100) : 0}%
+</span>
+</div>
+<div style={{height:8, background:t.tabBg, borderRadius:99, overflow:'hidden'}}>
+<div style={{
+width: `${completedCount + exams.length > 0 ? (completedCount / (completedCount + exams.length) * 100) : 0}%`,
+height: '100%', background: `linear-gradient(90deg, ${t.accent}, #5BA76F)`,
+borderRadius:99, transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
+}}/>
+</div>
+</div>
+)}
+<div className="fade-up" style={{
+display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:7, marginBottom:14,
+animationDelay:'0.09s',
+}}>
+<div style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:14, padding:'12px 8px', textAlign:'center',
+}}>
+<div style={{fontSize:22, fontWeight:800, color:t.accent, lineHeight:1, fontVariantNumeric:'tabular-nums'}}>
+{completedCount}
+</div>
+<div style={{fontSize:11, color:t.textMuted, marginTop:4, fontWeight:500}}>
+הסתיימו
+</div>
+</div>
+<div style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:14, padding:'12px 8px', textAlign:'center',
+}}>
+<div style={{fontSize:22, fontWeight:800, color:t.text, lineHeight:1, fontVariantNumeric:'tabular-nums'}}>
+{upcomingExams.length}
+</div>
+<div style={{fontSize:11, color:t.textMuted, marginTop:4, fontWeight:500}}>
+לפניך
+</div>
+</div>
+<button onClick={() => { haptic(); onShareAll(); }} className="pressable" style={{
+background:t.card, border:`1px solid ${t.borderSubtle}`,
+borderRadius:14, padding:'12px 8px',
+display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+gap:4, color:t.text, cursor:'pointer', fontFamily:'inherit',
+}}>
+<Icon name="Share2" size={18} style={{color:t.accent}}/>
+<div style={{fontSize:11, color:t.textMuted, fontWeight:500}}>
+שתף לוח
+</div>
+</button>
+</div>
+</>)}
+{exams.length === 0 && (
+<section className="fade-up" style={{
+background:t.card, borderRadius:20, padding:'48px 24px',
+border:`1px dashed ${t.border}`, textAlign:'center',
+animationDelay:'0.1s',
+}}>
+<div style={{
+width:64, height:64, margin:'0 auto 16px', borderRadius:'50%',
+background:t.accentSoft, color:t.accent,
+display:'flex', alignItems:'center', justifyContent:'center',
+}}>
+<Icon name="GraduationCap" size={28} />
+</div>
+<h2 style={{
+fontSize:22, margin:'0 0 6px', fontWeight:800,
+letterSpacing:'-0.02em', color:t.text,
+}}>
+אין מבחנים עדיין
+</h2>
+<p style={{ fontSize:14, color:t.textMuted, margin:'0 0 20px', lineHeight:1.5 }}>
+הוסף את המבחן הראשון שלך כדי להתחיל
+</p>
+<button
+className="pressable"
+onClick={onAdd}
+style={{
+padding:'12px 22px', background:t.accent, color:t.accentText,
+border:'none', borderRadius:999, fontSize:15, fontWeight:700,
+display:'inline-flex', alignItems:'center', gap:8,
+boxShadow: darkMode ? '0 4px 14px rgba(95,169,194,0.25)' : '0 4px 14px rgba(79,144,168,0.3)',
+}}
+>
+<Icon name="Plus" size={17} strokeWidth={2.6} />
+<span>הוסף מבחן</span>
+</button>
+</section>
+)}
+{sortedExams.length > 0 && (
+<div style={{ display:'flex', flexDirection:'column', gap:10, marginTop:4 }}>
+{sortedExams.map((exam, idx) => {
+const tl = calculateTimeLeft(exam.datetime);
+const isPast = new Date(exam.datetime) < now;
+const isClosest = !isPast && exam.id === closestExam?.id;
+return (
+<ExamCard
+key={exam.id} exam={exam} timeLeft={tl}
+isPast={isPast} isClosest={isClosest}
+t={t} darkMode={darkMode} now={now}
+onEdit={onEdit} onDelete={onDelete} onComplete={onComplete}
+onPractice={onPractice}
+delay={0.05 * idx}
+/>
+);
+})}
+</div>
+)}
+</>
+);
+}
+function ExamCard({ exam, timeLeft, isPast, isClosest, t, darkMode, onEdit, onDelete, onComplete, onPractice, delay, now }) {
+const dotColor = getStatusColor(timeLeft.days, isPast);
+const cardBg = isClosest ? t.cardCream : t.card;
+const cardBorder = isClosest ? t.cardCreamBorder : t.borderSubtle;
+const status = getExamStatus(exam, now);
+const inProgress = status === 'inProgress';
+const timeUntilEnd = inProgress ? calculateTimeUntilEnd(exam, now) : null;
+return (
+<div className="fade-up" style={{
+background:cardBg, borderRadius:16, padding:'14px 16px',
+border:`1px solid ${inProgress ? t.accent : cardBorder}`,
+animationDelay:`${0.1 + delay}s`,
+position:'relative', opacity: isPast ? 0.85 : 1,
+boxShadow: inProgress ? `0 0 0 2px ${t.accent}40` : 'none',
+}}>
+{isClosest && !inProgress && (
+<div style={{
+position:'absolute', top:-10, insetInlineStart:16,
+background:t.accent, color:t.accentText,
+fontSize:11, fontWeight:700,
+padding:'3px 10px', borderRadius:999,
+}}>
+הבחן הקרוב
+</div>
+)}
+{inProgress && (
+<div className="pulse" style={{
+position:'absolute', top:-10, insetInlineStart:16,
+background:'#DD4848', color:'#fff',
+fontSize:11, fontWeight:700,
+padding:'3px 10px', borderRadius:999,
+display:'inline-flex', alignItems:'center', gap:4,
+}}>
+<span style={{width:6, height:6, borderRadius:'50%', background:'#fff'}}/>
+בעיצומו
+</div>
+)}
+<div style={{ display:'flex', alignItems:'flex-start', gap:8 }}>
+<div style={{ fontSize:22, lineHeight:1, marginTop:2, flexShrink:0 }}>{getSubjectEmoji(exam.subject)}</div>
+<div style={{ flex:1, minWidth:0 }}>
+<div style={{
+fontSize:17, fontWeight:800, color:t.text,
+letterSpacing:'-0.01em', marginBottom:6,
+overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+}}>
+{exam.subject}
+</div>
+<div style={{
+fontSize:13, color:t.textMuted,
+display:'flex', alignItems:'center', gap:10, flexWrap:'wrap',
+}}>
+<span style={{display:'inline-flex', alignItems:'center', gap:5, fontWeight:600, color:inProgress ? '#DD4848' : dotColor}}>
+יום {getDayOfWeek(exam.datetime)}
+</span>
+<span style={{display:'inline-flex', alignItems:'center', gap:5}}>
+<Icon name="Calendar" size={12} />
+<span>{formatHebrewDate(exam.datetime)}</span>
+</span>
+<span style={{display:'inline-flex', alignItems:'center', gap:5}}>
+<Icon name="Clock" size={12} />
+<span>{formatTime(exam.datetime)}</span>
+</span>
+</div>
+</div>
+<div style={{ display:'flex', gap:2, flexShrink:0 }}>
+<button onClick={() => { haptic(); navigateToExam(exam); }} className="icon-btn" style={{width:32, height:32, color: exam.note ? t.accent : t.textSubtle}} aria-label="ניווט"><Icon name="MapPin" size={14} /></button>
+<button onClick={() => { haptic(); onPractice && onPractice(exam); }} className="icon-btn" style={{width:32, height:32, color:t.textMuted}} aria-label="תרגול"><Icon name="BookOpen" size={14} /></button>
+<button onClick={() => { haptic(); shareExam(exam); }} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="שתף">
+<Icon name="Share2" size={14} />
+</button>
+<button onClick={() => { haptic(); downloadIcs(exam); }} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="הוסף ליומן">
+<Icon name="CalendarPlus" size={15} />
+</button>
+<button onClick={() => { haptic(); onEdit(exam); }} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="ערוך">
+<Icon name="Edit2" size={15} />
+</button>
+<button onClick={() => { haptic(true); onComplete(exam); }} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="סיים">
+<Icon name="CheckCircle2" size={16} />
+</button>
+<button onClick={() => { haptic(); onDelete(exam.id); }} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="מחק">
+<Icon name="Trash2" size={14} />
+</button>
+</div>
+</div>
+{inProgress && timeUntilEnd ? (
+<div style={{
+marginTop:10, paddingTop:10, borderTop:`1px solid ${cardBorder}`,
+textAlign:'center', fontSize:14, color:'#DD4848', fontWeight:700,
+fontVariantNumeric:'tabular-nums', letterSpacing:'-0.01em',
+}}>
+⏱ נשארו {String(timeUntilEnd.hours).padStart(2,'0')}:{String(timeUntilEnd.minutes).padStart(2,'0')}:{String(timeUntilEnd.seconds).padStart(2,'0')}
+</div>
+) : isPast ? (
+<div style={{
+marginTop:12, paddingTop:12, borderTop:`1px solid ${cardBorder}`,
+textAlign:'center', fontSize:13, color:t.textMuted, fontWeight:500,
+}}>המבחן עבר</div>
+) : (
+<div style={{
+marginTop:10, paddingTop:10, borderTop:`1px solid ${cardBorder}`,
+textAlign:'center', fontSize:14, color:dotColor, fontWeight:700,
+fontVariantNumeric:'tabular-nums',
+letterSpacing:'-0.01em',
+}}>
+{timeLeft.days > 0 ? (
+<span>
+{timeLeft.days} ימים, {String(timeLeft.hours).padStart(2,'0')}:{String(timeLeft.minutes).padStart(2,'0')}:{String(timeLeft.seconds).padStart(2,'0')}
+</span>
+) : (
+<span>
+{String(timeLeft.hours).padStart(2,'0')}:{String(timeLeft.minutes).padStart(2,'0')}:{String(timeLeft.seconds).padStart(2,'0')}
+</span>
+)}
+</div>
+)}
+{exam.note && (
+<div style={{
+marginTop:10, paddingTop:10, borderTop:`1px solid ${cardBorder}`,
+fontSize:13, color:t.textMuted, lineHeight:1.4,
+}}>
+{exam.note}
+</div>
+)}
+</div>
+);
+}
+function ArchiveTab({ t, darkMode, completed, onRestore, onDelete }) {
+if (completed.length === 0) {
+return (
+<section className="fade-up" style={{
+background:t.card, borderRadius:20, padding:'48px 24px',
+border:`1px dashed ${t.border}`, textAlign:'center',
+}}>
+<div style={{
+width:60, height:60, margin:'0 auto 14px', borderRadius:18,
+background:t.accentSoft, color:t.accent,
+display:'flex', alignItems:'center', justifyContent:'center',
+}}>
+<Icon name="Archive" size={26} />
+</div>
+<h2 style={{ fontSize:20, margin:'0 0 6px', fontWeight:800, color:t.text }}>
+הארכיון ריק
+</h2>
+<p style={{ fontSize:14, color:t.textMuted, margin:0 }}>
+מבחנים שתסיים יופיעו כאן
+</p>
+</section>
+);
+}
+return (
+<div className="fade-up" style={{ display:'flex', flexDirection:'column', gap:8 }}>
+{completed.map(exam => (
+<div key={exam.id} style={{
+background:t.card, borderRadius:12, padding:'12px 16px',
+border:`1px solid ${t.borderSubtle}`,
+display:'flex', alignItems:'center', gap:12, opacity:0.85,
+}}>
+<div style={{
+width:28, height:28, borderRadius:'50%',
+background:`${getStatusColor(0,false)}30`,
+color:getStatusColor(0,false),
+display:'flex', alignItems:'center', justifyContent:'center',
+flexShrink:0,
+}}>
+<Icon name="Check" size={15} strokeWidth={3} />
+</div>
+<div style={{ flex:1, minWidth:0 }}>
+<div style={{
+fontWeight:600, fontSize:15, textDecoration:'line-through',
+overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+}}>{exam.subject}</div>
+<div style={{ fontSize:12, color:t.textSubtle }}>
+{formatHebrewDate(exam.datetime)}
+</div>
+</div>
+<button onClick={() => onRestore(exam)} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="שחזר">
+<Icon name="Edit2" size={14} />
+</button>
+<button onClick={() => onDelete(exam.id)} className="icon-btn"
+style={{width:32, height:32, color:t.textMuted}} aria-label="מחק">
+<Icon name="Trash2" size={14} />
+</button>
+</div>
+))}
+</div>
+);
+}
+function CalendarView({ t, darkMode, exams }) {
+const today = new Date();
+const [viewDate, setViewDate] = useState(() => {
+const upcoming = exams.filter(e => !e.completed && new Date(e.datetime) > new Date());
+if (upcoming.length > 0) {
+const closest = upcoming.sort((a,b) => new Date(a.datetime) - new Date(b.datetime))[0];
+return new Date(closest.datetime);
+}
+return new Date();
+});
+const [selectedDay, setSelectedDay] = useState(null);
+const year = viewDate.getFullYear();
+const month = viewDate.getMonth();
+const firstDay = new Date(year, month, 1);
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+const startDayOfWeek = firstDay.getDay();
+const monthExams = exams.filter(e => {
+const d = new Date(e.datetime);
+return d.getFullYear() === year && d.getMonth() === month;
+});
+const examsByDay = {};
+monthExams.forEach(e => {
+const d = new Date(e.datetime).getDate();
+(examsByDay[d] = examsByDay[d] || []).push(e);
+});
+const isToday = (day) =>
+year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+const dayLabels = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+const cells = [];
+for (let i = 0; i < startDayOfWeek; i++) cells.push(null);
+for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+const selectedDayExams = selectedDay !== null ? (examsByDay[selectedDay] || []) : [];
+return (
+<div className="fade-up">
+<section style={{
+background:t.card, borderRadius:18, padding:'18px 16px',
+border:`1px solid ${t.borderSubtle}`, marginBottom:14,
+}}>
+<div style={{
+display:'flex', justifyContent:'space-between', alignItems:'center',
+marginBottom:14,
+}}>
+<button onClick={() => { setSelectedDay(null); setViewDate(new Date(year, month-1, 1)); }}
+className="icon-btn" style={{
+width:36, height:36, color:t.textMuted,
+background:t.bg, border:`1px solid ${t.border}`, borderRadius:10,
+}} aria-label="חודש קודם">
+<Icon name="ChevronRight" size={16} />
+</button>
+<div style={{ textAlign:'center', flex:1 }}>
+<div style={{ fontSize:18, fontWeight:800, letterSpacing:'-0.02em', color:t.text }}>
+{HEBREW_MONTHS[month]} {year}
+</div>
+{(year !== today.getFullYear() || month !== today.getMonth()) && (
+<button
+onClick={() => { setSelectedDay(null); setViewDate(new Date()); }}
+style={{
+marginTop:2, background:'transparent', border:'none',
+fontSize:11, color:t.accent, fontWeight:600, padding:0,
+}}
+>חזרה להיום</button>
+)}
+</div>
+<button onClick={() => { setSelectedDay(null); setViewDate(new Date(year, month+1, 1)); }}
+className="icon-btn" style={{
+width:36, height:36, color:t.textMuted,
+background:t.bg, border:`1px solid ${t.border}`, borderRadius:10,
+}} aria-label="חודש הבא">
+<Icon name="ChevronLeft" size={16} />
+</button>
+</div>
+<div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:4, marginBottom:6 }}>
+{dayLabels.map((l,i) => (
+<div key={i} style={{
+textAlign:'center', fontSize:11, fontWeight:700,
+color:t.textSubtle, padding:'6px 0',
+}}>{l}</div>
+))}
+</div>
+<div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:4 }}>
+{cells.map((day, idx) => {
+if (day === null) return <div key={`e${idx}`} style={{aspectRatio:'1'}} />;
+const dayExams = examsByDay[day] || [];
+const hasExam = dayExams.length > 0;
+const allCompleted = hasExam && dayExams.every(e => e.completed);
+const upcoming = dayExams.filter(e => !e.completed);
+const closestUp = upcoming.sort((a,b) => new Date(a.datetime) - new Date(b.datetime))[0];
+const dColor = closestUp ? getStatusColor(calculateTimeLeft(closestUp.datetime).days, false) : null;
+const todayCell = isToday(day);
+const selected = selectedDay === day;
+return (
+<button key={day}
+onClick={() => setSelectedDay(selected ? null : day)}
+style={{
+aspectRatio:'1', display:'flex', flexDirection:'column',
+alignItems:'center', justifyContent:'center', gap:3,
+border:'none', borderRadius:10,
+background: selected ? t.accent
+: (hasExam && !allCompleted) ? `${dColor}20`
+: todayCell ? t.bg : 'transparent',
+outline: todayCell && !selected ? `1.5px solid ${t.accent}` : 'none',
+outlineOffset:'-1.5px',
+fontFamily:'inherit',
+}}>
+<div className="num-tabular" style={{
+fontSize:14, fontWeight: todayCell || hasExam ? 700 : 500,
+color: selected ? t.accentText
+: (hasExam && !allCompleted) ? dColor
+: allCompleted ? t.textSubtle : t.text,
+textDecoration: allCompleted && !selected ? 'line-through' : 'none',
+lineHeight:1,
+}}>{day}</div>
+{hasExam && (
+<div style={{display:'flex', gap:2}}>
+{dayExams.slice(0,3).map((_,i) => (
+<div key={i} style={{
+width:4, height:4, borderRadius:'50%',
+background: selected ? t.accentText
+: allCompleted ? t.textSubtle : dColor,
+}}/>
+))}
+</div>
+)}
+</button>
+);
+})}
+</div>
+</section>
+{selectedDayExams.length > 0 ? (
+<section className="fade-in">
+<h3 style={{
+fontSize:13, fontWeight:700, textTransform:'uppercase',
+letterSpacing:'0.12em', color:t.textMuted, margin:'0 0 12px',
+}}>{selectedDay} ב{HEBREW_MONTHS[month]}</h3>
+<div style={{display:'flex', flexDirection:'column', gap:8}}>
+{selectedDayExams.map(exam => {
+const tl = calculateTimeLeft(exam.datetime);
+const c = getStatusColor(tl.days, exam.completed);
+return (
+<div key={exam.id} style={{
+background:t.card, borderRadius:12, padding:'12px 16px',
+border:`1px solid ${t.borderSubtle}`,
+display:'flex', alignItems:'center', gap:12,
+opacity: exam.completed ? 0.6 : 1,
+}}>
+<Icon name="Clock" size={16}
+style={{ color: exam.completed ? t.textSubtle : c }} />
+<div style={{flex:1, minWidth:0}}>
+<div style={{
+fontWeight:700, fontSize:15,
+textDecoration: exam.completed ? 'line-through' : 'none',
+}}>{exam.subject}</div>
+<div style={{fontSize:12, color:t.textMuted, marginTop:2}}>
+{formatTime(exam.datetime)}
+{!exam.completed && tl.days >= 0 && ` · בעוד ${tl.days} ימים`}
+</div>
+</div>
+</div>
+);
+})}
+</div>
+</section>
+) : monthExams.length > 0 ? (
+<section className="fade-in">
+<h3 style={{
+fontSize:13, fontWeight:700, textTransform:'uppercase',
+letterSpacing:'0.12em', color:t.textMuted, margin:'0 0 12px',
+}}>מבחני {HEBREW_MONTHS[month]} ({monthExams.length})</h3>
+<div style={{display:'flex', flexDirection:'column', gap:8}}>
+{[...monthExams].sort((a,b) => new Date(a.datetime) - new Date(b.datetime)).map(exam => {
+const tl = calculateTimeLeft(exam.datetime);
+const c = getStatusColor(tl.days, exam.completed);
+const d = new Date(exam.datetime);
+return (
+<div key={exam.id} style={{
+background:t.card, borderRadius:12, padding:'10px 14px',
+border:`1px solid ${t.borderSubtle}`,
+display:'flex', alignItems:'center', gap:12,
+opacity: exam.completed ? 0.55 : 1,
+}}>
+<div className="num-tabular" style={{
+minWidth:32, textAlign:'center',
+fontSize:20, fontWeight:800, lineHeight:1,
+color: exam.completed ? t.textSubtle : c,
+}}>{d.getDate()}</div>
+<div style={{flex:1, minWidth:0}}>
+<div style={{
+fontWeight:700, fontSize:14,
+textDecoration: exam.completed ? 'line-through' : 'none',
+overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+}}>{exam.subject}</div>
+<div style={{fontSize:11, color:t.textMuted}}>
+יום {HEBREW_DAYS[d.getDay()]} · {formatTime(exam.datetime)}
+</div>
+</div>
+</div>
+);
+})}
+</div>
+</section>
+) : (
+<div style={{
+textAlign:'center', padding:'24px 20px',
+color:t.textMuted, fontSize:14,
+}}>אין מבחנים בחודש {HEBREW_MONTHS[month]}</div>
+)}
+</div>
+);
+}
+function ExamForm({ exam, t, darkMode, onSave, onCancel }) {
+const [subject, setSubject] = useState(exam?.subject || '');
+const [date, setDate] = useState(exam ? new Date(exam.datetime).toISOString().split('T')[0] : '');
+const [time, setTime] = useState(exam ? new Date(exam.datetime).toTimeString().slice(0,5) : '09:00');
+const [duration, setDuration] = useState(exam?.duration || 120);
+const [note, setNote] = useState(exam?.note || '');
+const [error, setError] = useState('');
+const submit = () => {
+if (!subject.trim()) { setError('נא להזין שם של מקצוע'); return; }
+if (!date) { setError('נא לבחור תאריך'); return; }
+onSave({
+subject: subject.trim(),
+datetime: new Date(`${date}T${time}:00`).toISOString(),
+duration: parseInt(duration) || 120,
+note: note.trim(),
+});
+};
+const inputStyle = {
+width:'100%', padding:'12px 14px',
+background:t.card, color:t.text,
+border:`1px solid ${t.border}`, borderRadius:10,
+fontSize:15, direction:'rtl',
+};
+return (
+<div className="fade-in" onClick={onCancel} style={{
+position:'fixed', inset:0,
+background: darkMode ? 'rgba(10,10,14,0.7)' : 'rgba(27,42,61,0.4)',
+backdropFilter:'blur(8px)', zIndex:100,
+display:'flex', alignItems:'flex-end', justifyContent:'center',
+}}>
+<div onClick={e => e.stopPropagation()} dir="rtl" style={{
+background:t.cardElevated, width:'100%', maxWidth:520,
+borderRadius:'24px 24px 0 0', padding:'24px 24px 28px',
+maxHeight:'92vh', overflowY:'auto',
+animation:'fadeUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+border:`1px solid ${t.border}`, borderBottom:'none',
+paddingBottom: 'calc(28px + env(safe-area-inset-bottom))',
+}}>
+<div style={{
+width:36, height:4, background:t.border,
+borderRadius:2, margin:'0 auto 20px',
+}}/>
+<div style={{
+display:'flex', justifyContent:'space-between',
+alignItems:'center', marginBottom:18,
+}}>
+<h3 style={{
+margin:0, fontSize:20, fontWeight:800,
+letterSpacing:'-0.02em', color:t.text,
+}}>{exam ? 'עריכת מבחן' : 'מבחן חדש'}</h3>
+<button onClick={onCancel} className="icon-btn" style={{
+width:36, height:36, color:t.textMuted, background:t.card,
+}} aria-label="סגור"><Icon name="X" size={18}/></button>
+</div>
+<div style={{display:'flex', flexDirection:'column', gap:12}}>
+<Field label="מקצוע" t={t}>
+<input
+type="text" value={subject}
+onChange={e => { setSubject(e.target.value); setError(''); }}
+placeholder="למשל: מתמטיקה 5 יחידות"
+style={inputStyle} autoFocus
+/>
+</Field>
+<div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+<Field label="תאריך" t={t}>
+<input
+type="date" value={date}
+onChange={e => { setDate(e.target.value); setError(''); }}
+style={inputStyle}
+/>
+</Field>
+<Field label="שעה" t={t}>
+<input
+type="time" value={time}
+onChange={e => setTime(e.target.value)}
+style={inputStyle}
+/>
+</Field>
+</div>
+<Field label="משך המבחן (דקות)" t={t}>
+<input
+type="number" value={duration} min="15" max="600" step="15"
+onChange={e => setDuration(e.target.value)}
+style={inputStyle}
+/>
+</Field>
+<Field label="הערה (לא חובה)" t={t}>
+<textarea
+value={note} onChange={e => setNote(e.target.value)}
+placeholder="למשל: להתמקד בנגזרות"
+rows={2}
+style={{...inputStyle, resize:'none', minHeight:56}}
+/>
+</Field>
+{error && (
+<div style={{
+color:'#DD4848', fontSize:13,
+padding:'8px 12px', background:'#DD484815',
+borderRadius:8, fontWeight:500,
+}}>{error}</div>
+)}
+<div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:6}}>
+<button onClick={onCancel} className="pressable" style={{
+padding:14, background:t.card, color:t.text,
+border:`1px solid ${t.border}`, borderRadius:12,
+fontSize:15, fontWeight:600,
+}}>ביטול</button>
+<button onClick={submit} className="pressable" style={{
+padding:14, background:t.accent, color:t.accentText,
+border:'none', borderRadius:12,
+fontSize:15, fontWeight:700,
+}}>{exam ? 'שמור' : 'הוסף'}</button>
+</div>
+</div>
+</div>
+</div>
+);
+}
+function Field({ label, t, children }) {
+return (
+<label style={{display:'block'}}>
+<div style={{
+fontSize:12, fontWeight:600, color:t.textMuted,
+marginBottom:6, textTransform:'uppercase', letterSpacing:'0.08em',
+}}>{label}</div>
+{children}
+</label>
+);
+}
+const isExamToday = (exam, now) => {
+const ed = new Date(exam.datetime);
+return ed.toDateString() === now.toDateString() && ed > now;
+};
+const formatLeaveTime = (datetime, bufferMin = 60) => {
+const leave = new Date(new Date(datetime).getTime() - bufferMin * 60000);
+return `${String(leave.getHours()).padStart(2,'0')}:${String(leave.getMinutes()).padStart(2,'0')}`;
+};
+function ExamDayCard({ exam, t, darkMode, now, onOpenBreathing, onComplete }) {
+const [checked, setChecked] = useState(() => store.get(`bagrut-checklist-${exam.id}`, {}));
+const items = useMemo(() => getExamDayChecklist(exam.subject), [exam.subject]);
+const tl = calculateTimeLeft(exam.datetime);
+useEffect(() => { store.set(`bagrut-checklist-${exam.id}`, checked); }, [checked, exam.id]);
+const toggle = (item) => { haptic(); setChecked({...checked, [item]: !checked[item]}); };
+const doneCount = items.filter(i => checked[i]).length;
+const allDone = doneCount === items.length;
+const emoji = getSubjectEmoji(exam.subject);
+return (<div className="fade-up" style={{
+background: `linear-gradient(135deg, ${t.accent}, #5BA76F)`,
+borderRadius:20, padding:'18px 18px 16px', marginBottom:14,
+color:'#fff', boxShadow: darkMode ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(79,144,168,0.3)',
+animationDelay:'0.05s', position:'relative', overflow:'hidden',
+}}>
+<div style={{position:'absolute', top:-20, insetInlineEnd:-20, fontSize:120, opacity:0.12, lineHeight:1}}>{emoji}</div>
+<div style={{position:'relative'}}>
+<div style={{display:'flex', alignItems:'center', gap:6, marginBottom:4}}>
+<Icon name="Target" size={14} />
+<span style={{fontSize:12, fontWeight:700, letterSpacing:'0.1em'}}>היום!</span>
+</div>
+<div style={{fontSize:22, fontWeight:800, marginBottom:2, letterSpacing:'-0.02em'}}>{exam.subject}</div>
+<div style={{fontSize:13, opacity:0.9, marginBottom:14}}>בעוד {tl.hours > 0 ? `${tl.hours}:${String(tl.minutes).padStart(2,'0')}` : `${tl.minutes} דקות`} • שעת התחלה {formatTime(exam.datetime)}</div>
+<div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:14}}>
+<div style={{background:'rgba(255,255,255,0.18)', borderRadius:12, padding:'10px 8px', backdropFilter:'blur(8px)'}}>
+<div style={{fontSize:10, opacity:0.85, marginBottom:2}}>שעת יציאה</div>
+<div style={{fontSize:18, fontWeight:800, fontVariantNumeric:'tabular-nums'}}>{formatLeaveTime(exam.datetime)}</div>
+</div>
+<button onClick={() => { haptic(); navigateToExam(exam); }} style={{
+background:'rgba(255,255,255,0.18)', border:'none', borderRadius:12, padding:'10px 8px',
+backdropFilter:'blur(8px)', color:'#fff', textAlign:'right', cursor:'pointer', fontFamily:'inherit',
+display:'flex', flexDirection:'column', alignItems:'flex-start',
+}}>
+<div style={{fontSize:10, opacity:0.85, marginBottom:2, display:'flex', alignItems:'center', gap:4}}>
+<Icon name="MapPin" size={11} /> ניווט
+</div>
+<div style={{fontSize:13, fontWeight:700}}>פתח מפה</div>
+</button>
+<button onClick={() => { haptic(); onOpenBreathing(); }} style={{
+background:'rgba(255,255,255,0.18)', border:'none', borderRadius:12, padding:'10px 8px',
+backdropFilter:'blur(8px)', color:'#fff', textAlign:'right', cursor:'pointer', fontFamily:'inherit',
+display:'flex', flexDirection:'column', alignItems:'flex-start',
+}}>
+<div style={{fontSize:10, opacity:0.85, marginBottom:2, display:'flex', alignItems:'center', gap:4}}>
+<Icon name="Wind" size={11} /> נשימה
+</div>
+<div style={{fontSize:13, fontWeight:700}}>1 דקה</div>
+</button>
+</div>
+<div style={{background:'rgba(255,255,255,0.15)', borderRadius:12, padding:12, marginBottom:10}}>
+<div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, fontSize:12, fontWeight:700}}>
+<span>📋 רשימת ציוד</span>
+<span style={{fontVariantNumeric:'tabular-nums', opacity:0.9}}>{doneCount}/{items.length}</span>
+</div>
+<div style={{display:'flex', flexDirection:'column', gap:5}}>
+{items.map(item => (
+<button key={item} onClick={() => toggle(item)} style={{
+display:'flex', alignItems:'center', gap:8, padding:'6px 4px', background:'transparent',
+border:'none', color:'#fff', cursor:'pointer', fontFamily:'inherit', textAlign:'right', fontSize:13.5,
+opacity: checked[item] ? 0.6 : 1, textDecoration: checked[item] ? 'line-through' : 'none',
+}}>
+<div style={{
+width:18, height:18, borderRadius:5, flexShrink:0,
+background: checked[item] ? '#fff' : 'transparent',
+border:'2px solid #fff', display:'flex', alignItems:'center', justifyContent:'center',
+}}>{checked[item] && <Icon name="Check" size={11} style={{color:t.accent}} strokeWidth={4}/>}</div>
+<span>{item}</span>
+</button>
+))}
+</div>
+</div>
+<div style={{fontSize:13, fontStyle:'italic', opacity:0.95, lineHeight:1.5, textAlign:'center', padding:'4px 8px'}}>
+💙 {getCalmTip()}
+</div>
+</div>
+</div>);
+}
+function BreathingModal({ t, darkMode, onClose }) {
+const [phase, setPhase] = useState('inhale');
+useEffect(() => {
+const phases = ['inhale', 'hold', 'exhale'];
+let i = 0;
+const interval = setInterval(() => { i = (i + 1) % 3; setPhase(phases[i]); }, 4000);
+return () => clearInterval(interval);
+}, []);
+const phaseText = {inhale: 'שאף', hold: 'החזק', exhale: 'נשוף'};
+return (<div className="fade-in" onClick={onClose} style={{
+position:'fixed', inset:0, background: darkMode ? 'rgba(10,10,14,0.92)' : 'rgba(27,42,61,0.92)',
+backdropFilter:'blur(12px)', zIndex:200, display:'flex', flexDirection:'column',
+alignItems:'center', justifyContent:'center', cursor:'pointer',
+}}>
+<div style={{
+width:240, height:240, borderRadius:'50%',
+background:`radial-gradient(circle, ${t.accent}, transparent 70%)`,
+animation:'breathe 12s ease-in-out infinite',
+display:'flex', alignItems:'center', justifyContent:'center',
+}}>
+<div style={{
+fontSize:32, fontWeight:800, color:'#fff', letterSpacing:'-0.02em',
+}}>{phaseText[phase]}</div>
+</div>
+<div style={{marginTop:40, color:'#fff', fontSize:15, opacity:0.8, textAlign:'center', maxWidth:280, lineHeight:1.5}}>
+4 שניות שאיפה, 4 החזקה, 4 נשיפה<br/>
+לחץ במקום כלשהו לסיום
+</div>
+</div>);
+}
+function PracticeModal({ exam, t, darkMode, onClose }) {
+const category = getQuestionCategory(exam.subject);
+const questions = category ? QUESTIONS[category] : null;
+const [idx, setIdx] = useState(0);
+const [showAnswer, setShowAnswer] = useState(false);
+const [order, setOrder] = useState(() => questions ? [...Array(questions.length).keys()].sort(() => Math.random() - 0.5) : []);
+if (!questions) {
+return (<div className="fade-in" onClick={onClose} style={{
+position:'fixed', inset:0, background: darkMode ? 'rgba(10,10,14,0.7)' : 'rgba(27,42,61,0.4)',
+backdropFilter:'blur(8px)', zIndex:100, display:'flex', alignItems:'flex-end', justifyContent:'center',
+}}>
+<div onClick={e => e.stopPropagation()} dir="rtl" style={{
+background:t.cardElevated, width:'100%', maxWidth:520,
+borderRadius:'24px 24px 0 0', padding:'32px 24px',
+border:`1px solid ${t.border}`, textAlign:'center',
+}}>
+<div style={{fontSize:40, marginBottom:8}}>🎓</div>
+<h3 style={{margin:'0 0 8px', color:t.text, fontSize:18, fontWeight:800}}>אין שאלות תרגול למקצוע הזה עדיין</h3>
+<p style={{fontSize:14, color:t.textMuted, margin:'0 0 16px'}}>זמין כרגע למתמטיקה, אנגלית, היסטוריה, תנ"ך, ספרות, מחשבת, אזרחות, דינים, תושבע"פ, תפילה, חינוך</p>
+<button onClick={onClose} style={{padding:'10px 18px', background:t.accent, color:t.accentText, border:'none', borderRadius:10, fontSize:14, fontWeight:700, cursor:'pointer'}}>סגור</button>
+</div>
+</div>);
+}
+const currentQ = questions[order[idx]];
+const next = () => { haptic(); setShowAnswer(false); setIdx((idx + 1) % order.length); };
+const shuffle = () => { haptic(true); setShowAnswer(false); setIdx(0); setOrder([...Array(questions.length).keys()].sort(() => Math.random() - 0.5)); };
+return (<div className="fade-in" onClick={onClose} style={{
+position:'fixed', inset:0, background: darkMode ? 'rgba(10,10,14,0.7)' : 'rgba(27,42,61,0.4)',
+backdropFilter:'blur(8px)', zIndex:100, display:'flex', alignItems:'flex-end', justifyContent:'center',
+}}>
+<div onClick={e => e.stopPropagation()} dir="rtl" style={{
+background:t.cardElevated, width:'100%', maxWidth:520, borderRadius:'24px 24px 0 0',
+padding:'24px 24px 28px', maxHeight:'92vh', overflowY:'auto',
+animation:'fadeUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+border:`1px solid ${t.border}`, borderBottom:'none',
+paddingBottom:'calc(28px + env(safe-area-inset-bottom))',
+}}>
+<div style={{width:36, height:4, background:t.border, borderRadius:2, margin:'0 auto 20px'}}/>
+<div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18}}>
+<div>
+<div style={{fontSize:11, color:t.textMuted, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase'}}>תרגול</div>
+<h3 style={{margin:'2px 0 0', fontSize:18, fontWeight:800, color:t.text}}>{exam.subject}</h3>
+</div>
+<button onClick={onClose} className="icon-btn" style={{width:36, height:36, color:t.textMuted, background:t.card}} aria-label="סגור"><Icon name="X" size={18}/></button>
+</div>
+<div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, fontSize:12, color:t.textMuted}}>
+<span>שאלה {idx + 1} מתוך {questions.length}</span>
+<span style={{fontVariantNumeric:'tabular-nums'}}>{Math.round(((idx+1)/questions.length)*100)}%</span>
+</div>
+<div style={{height:4, background:t.tabBg, borderRadius:99, marginBottom:18, overflow:'hidden'}}>
+<div style={{width:`${((idx+1)/questions.length)*100}%`, height:'100%', background:t.accent, transition:'width 0.3s ease'}}/>
+</div>
+<div onClick={() => { haptic(); setShowAnswer(!showAnswer); }} style={{
+background:showAnswer ? `linear-gradient(135deg, ${t.accent}15, ${t.accent}25)` : t.card,
+border:`2px solid ${showAnswer ? t.accent : t.border}`,
+borderRadius:18, padding:'28px 22px', minHeight:200,
+display:'flex', flexDirection:'column', justifyContent:'center',
+cursor:'pointer', marginBottom:14, transition:'all 0.3s ease',
+}}>
+<div style={{fontSize:11, color:showAnswer ? t.accent : t.textMuted, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:10, textAlign:'center'}}>
+{showAnswer ? '✨ תשובה' : '❓ שאלה'}
+</div>
+<div style={{fontSize:showAnswer ? 17 : 19, fontWeight:showAnswer ? 600 : 700, color:t.text, lineHeight:1.5, textAlign:'center', letterSpacing:'-0.01em'}}>
+{showAnswer ? currentQ.a : currentQ.q}
+</div>
+<div style={{fontSize:11, color:t.textSubtle, marginTop:14, textAlign:'center'}}>
+{showAnswer ? 'לחץ להחזיר לשאלה' : 'לחץ לראות תשובה'}
+</div>
+</div>
+<div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+<button onClick={shuffle} className="pressable" style={{
+padding:13, background:t.card, color:t.text, border:`1px solid ${t.border}`,
+borderRadius:12, fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', gap:6, cursor:'pointer',
+}}><Icon name="RotateCw" size={14}/>ערבב</button>
+<button onClick={next} className="pressable" style={{
+padding:13, background:t.accent, color:t.accentText, border:'none',
+borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer',
+}}>הבא ←</button>
+</div>
+</div>
+</div>);
+}
+let pdfJsPromise = null;
+const loadPdfJs = () => {
+if (pdfJsPromise) return pdfJsPromise;
+pdfJsPromise = new Promise((resolve, reject) => {
+if (window.pdfjsLib) return resolve(window.pdfjsLib);
+const s = document.createElement('script');
+s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js';
+s.onload = () => {
+window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+resolve(window.pdfjsLib);
+};
+s.onerror = () => reject(new Error('שגיאה בטעינת ספריית PDF'));
+document.head.appendChild(s);
+});
+return pdfJsPromise;
+};
+const parseBagrutText = (rawText) => {
+const text = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+const pattern = /(\d{1,2})[.:](\d{2})\s+(\d{2})\/(\d{2})\/(\d{4})\s+(.+?)\s+(\d{4,5})(?=\s|$)/g;
+const subjectKW = /(?:מתמטיק|אנגלית|היסטוריה|תנ"?ך|ספרות|מחשבת|אזרחות|דינים|תפיל|תושבע|חינוך|משפח|ביולוגיה|כימיה|פיזיק|לשון|עברית|גיאוגרפיה)/;
+const locMarkers = /(שלוחת|מכללת|מרכז\s|_?ברנר|אפעל|בית\s*ספר|אולפנת|ישיבת)/;
+const extractFromChunk = (chunk) => {
+const kwMatch = chunk.match(subjectKW);
+if (kwMatch) {
+const start = kwMatch.index;
+const rest = chunk.substring(start);
+const locMatch = rest.match(locMarkers);
+let subj, n;
+if (locMatch) {
+subj = rest.substring(0, locMatch.index).trim();
+n = (chunk.substring(0, start).trim() + ' ' + rest.substring(locMatch.index)).trim();
+} else {
+const words = rest.split(/\s+/);
+const wc = Math.min(4, words.length);
+subj = words.slice(0, wc).join(' ').trim();
+n = (chunk.substring(0, start).trim() + ' ' + words.slice(wc).join(' ')).trim();
+}
+return {subject: subj, note: n, score: 10};
+}
+const locIdx = chunk.search(locMarkers);
+if (locIdx > 0) return {subject: chunk.substring(0, locIdx).trim(), note: chunk.substring(locIdx).trim(), score: 5};
+const parts = chunk.split(' ');
+return {subject: parts.slice(0, 3).join(' '), note: parts.slice(3).join(' '), score: 1};
+};
+const exams = [];
+let m;
+while ((m = pattern.exec(text)) !== null) {
+const hh = m[1], min = m[2], dd = m[3], mm = m[4], yyyy = m[5];
+const origChunk = m[6].trim();
+const shaalon = m[7];
+const dN = parseInt(dd), mN = parseInt(mm), hN = parseInt(hh), minN = parseInt(min);
+if (dN < 1 || dN > 31 || mN < 1 || mN > 12 || hN > 23 || minN > 59) continue;
+let revChunk = origChunk.split('').reverse().join('');
+revChunk = revChunk.replace(/\d{2,}/g, n => n.split('').reverse().join(''));
+const fwd = extractFromChunk(origChunk);
+const rev = extractFromChunk(revChunk);
+const chosen = rev.score > fwd.score ? rev : fwd;
+let subject = chosen.subject.replace(/\s*-\s*תכנית\s*חדשה\s*/, ' ').trim();
+if (!subject) subject = 'מקצוע';
+const dtStr = `${yyyy}-${mm}-${dd}T${hh.padStart(2,'0')}:${min}:00`;
+exams.push({ subject: `${subject} ${shaalon}`, datetime: new Date(dtStr).toISOString(), note: chosen.note });
+}
+const seen = new Set();
+return exams.filter(e => { const k = `${e.datetime}|${e.subject}`; if (seen.has(k)) return false; seen.add(k); return true; });
+};
+function ImportModal({ t, darkMode, onImport, onCancel }) {
+const [mode, setMode] = useState('select');
+const [fileName, setFileName] = useState('');
+const [extracted, setExtracted] = useState([]);
+const [error, setError] = useState('');
+const processFile = async (file) => {
+setMode('processing');
+setError('');
+setFileName(file.name);
+try {
+if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+throw new Error('כרגע נתמכים רק קבצי PDF. בקרוב יתווסף תמיכה בתמונות.');
+}
+const pdfjs = await loadPdfJs();
+const arrayBuffer = await file.arrayBuffer();
+const pdf = await pdfjs.getDocument({data: arrayBuffer}).promise;
+let fullText = '';
+for (let i = 1; i <= pdf.numPages; i++) {
+const page = await pdf.getPage(i);
+const content = await page.getTextContent();
+const pageText = content.items.map(it => it.str).join(' ');
+fullText += pageText + ' ';
+}
+const parsed = parseBagrutText(fullText);
+if (parsed.length === 0) {
+throw new Error('לא זוהו מבחנים במסמך. ייתכן שהפורמט של ה-PDF שונה מהצפוי, או שהקובץ מבוסס תמונה במקום טקסט.');
+}
+setExtracted(parsed.map((e, i) => ({
+...e,
+selected: true,
+tempId: i,
+})));
+setMode('preview');
+} catch (e) {
+setError(e.message || 'שגיאה בעיבוד הקובץ');
+setMode('error');
+}
+};
+const toggle = (id) => setExtracted(extracted.map(e => e.tempId === id ? {...e, selected:!e.selected} : e));
+const handleConfirm = () => {
+const selected = extracted.filter(e => e.selected);
+if (selected.length === 0) return;
+onImport(selected.map(({subject, datetime, note}) => ({subject, datetime, note})));
+};
+const selectedCount = extracted.filter(e => e.selected).length;
+return (
+<div className="fade-in" onClick={onCancel} style={{
+position:'fixed', inset:0,
+background: darkMode ? 'rgba(10,10,14,0.7)' : 'rgba(27,42,61,0.4)',
+backdropFilter:'blur(8px)', zIndex:100,
+display:'flex', alignItems:'flex-end', justifyContent:'center',
+}}>
+<div onClick={e => e.stopPropagation()} dir="rtl" style={{
+background:t.cardElevated, width:'100%', maxWidth:520,
+borderRadius:'24px 24px 0 0', padding:'24px 24px 28px',
+maxHeight:'92vh', overflowY:'auto',
+animation:'fadeUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+border:`1px solid ${t.border}`, borderBottom:'none',
+paddingBottom:'calc(28px + env(safe-area-inset-bottom))',
+}}>
+<div style={{width:36, height:4, background:t.border, borderRadius:2, margin:'0 auto 20px'}}/>
+<div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18}}>
+<h3 style={{margin:0, fontSize:20, fontWeight:800, letterSpacing:'-0.02em', color:t.text}}>
+{mode === 'select' ? 'ייבוא לוח בחינות' :
+mode === 'processing' ? 'מנתח...' :
+mode === 'preview' ? 'אישור מבחנים' : 'שגיאה'}
+</h3>
+<button onClick={onCancel} className="icon-btn" style={{
+width:36, height:36, color:t.textMuted, background:t.card,
+}} aria-label="סגור"><Icon name="X" size={18}/></button>
+</div>
+{mode === 'select' && (
+<div style={{display:'flex', flexDirection:'column', gap:12}}>
+<p style={{fontSize:14, color:t.textMuted, margin:'0 0 4px', lineHeight:1.5}}>
+העלה את ה-PDF של הודעת הרישום ממשרד החינוך. האפליקציה תזהה את כל המבחנים אוטומטית — בלי צורך ב-API או חשבון.
+</p>
+<label style={{
+display:'flex', alignItems:'center', gap:14,
+padding:'16px 18px', background:t.card,
+border:`1px solid ${t.border}`, borderRadius:14,
+cursor:'pointer',
+}}>
+<div style={{
+width:44, height:44, borderRadius:12,
+background:t.accentSoft, color:t.accent,
+display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+}}>
+<Icon name="Upload" size={20}/>
+</div>
+<div style={{flex:1}}>
+<div style={{fontWeight:700, fontSize:15, marginBottom:2}}>בחר קובץ PDF</div>
+<div style={{fontSize:12, color:t.textMuted}}>הודעת רישום ממשרד החינוך</div>
+</div>
+<input
+type="file"
+accept="application/pdf,.pdf"
+onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
+style={{display:'none'}}
+/>
+</label>
+<div style={{
+fontSize:12, color:t.textSubtle, textAlign:'center',
+lineHeight:1.5, marginTop:4,
+}}>
+העיבוד מתבצע במכשיר שלך בלבד — שום נתון לא נשלח לאינטרנט.
+</div>
+</div>
+)}
+{mode === 'processing' && (
+<div style={{
+display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+padding:'40px 20px', gap:16,
+}}>
+<div style={{
+width:56, height:56, borderRadius:16,
+background:`${t.accent}15`, color:t.accent,
+display:'flex', alignItems:'center', justifyContent:'center',
+}}>
+<Icon name="Loader2" size={26} style={{animation:'spin 1s linear infinite'}}/>
+</div>
+<div style={{textAlign:'center'}}>
+<div style={{fontSize:18, fontWeight:700, marginBottom:4, color:t.text}}>מזהה מבחנים...</div>
+<div style={{fontSize:13, color:t.textMuted}}>{fileName ? `מנתח את ${fileName}` : 'עוד רגע...'}</div>
+</div>
+</div>
+)}
+{mode === 'preview' && (
+<div style={{display:'flex', flexDirection:'column', gap:10}}>
+<p style={{fontSize:13, color:t.textMuted, margin:'0 0 4px'}}>
+נמצאו {extracted.length} מבחנים. סמן את אלו שתרצה להוסיף:
+</p>
+<div style={{display:'flex', flexDirection:'column', gap:8, maxHeight:'50vh', overflowY:'auto'}}>
+{extracted.map(exam => (
+<button key={exam.tempId} onClick={() => toggle(exam.tempId)} style={{
+display:'flex', alignItems:'center', gap:12,
+padding:'12px 14px',
+background: exam.selected ? `${t.accent}10` : t.card,
+border:`1px solid ${exam.selected ? t.accent : t.border}`,
+borderRadius:12, cursor:'pointer',
+fontFamily:'inherit', color:t.text, textAlign:'right',
+}}>
+<div style={{
+width:22, height:22, borderRadius:6,
+background: exam.selected ? t.accent : 'transparent',
+border:`2px solid ${exam.selected ? t.accent : t.border}`,
+display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+}}>
+{exam.selected && <Icon name="Check" size={13} style={{color:t.accentText}} strokeWidth={3}/>}
+</div>
+<div style={{flex:1, minWidth:0}}>
+<div style={{fontWeight:700, fontSize:15, marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+{exam.subject}
+</div>
+<div style={{fontSize:12, color:t.textMuted}}>
+{formatHebrewDate(exam.datetime)} · {formatTime(exam.datetime)}
+</div>
+</div>
+</button>
+))}
+</div>
+<div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:8}}>
+<button onClick={() => setMode('select')} className="pressable" style={{
+padding:14, background:t.card, color:t.text,
+border:`1px solid ${t.border}`, borderRadius:12,
+fontSize:15, fontWeight:600,
+}}>ביטול</button>
+<button onClick={handleConfirm} disabled={selectedCount === 0} className="pressable" style={{
+padding:14,
+background: selectedCount === 0 ? t.border : t.accent,
+color: selectedCount === 0 ? t.textMuted : t.accentText,
+border:'none', borderRadius:12,
+fontSize:15, fontWeight:700,
+cursor: selectedCount === 0 ? 'not-allowed' : 'pointer',
+}}>הוסף ({selectedCount})</button>
+</div>
+</div>
+)}
+{mode === 'error' && (
+<div style={{display:'flex', flexDirection:'column', gap:12}}>
+<div style={{
+display:'flex', alignItems:'flex-start', gap:12,
+padding:'14px 16px', background:'#DD484815',
+border:'1px solid #DD484830', borderRadius:12,
+}}>
+<Icon name="AlertCircle" size={18} style={{color:'#DD4848', marginTop:2}}/>
+<div style={{fontSize:14, color:t.text, lineHeight:1.5}}>{error}</div>
+</div>
+<button onClick={() => { setMode('select'); setError(''); }} className="pressable" style={{
+padding:14, background:t.accent, color:t.accentText,
+border:'none', borderRadius:12,
+fontSize:15, fontWeight:700,
+}}>נסה שוב</button>
+</div>
+)}
+</div>
+</div>
+);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
